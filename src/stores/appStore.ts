@@ -493,6 +493,22 @@ export const CORTEXES: Cortex[] = [
    APP STORE
    ============================================ */
 
+/* ============================================
+   LAYOUT MODES
+   ============================================ */
+
+export type LayoutMode = 'architecture' | 'dependencies' | 'dataflow' | 'runtime' | 'package'
+
+export const LAYOUT_MODE_META: Record<LayoutMode, { label: string; shortcut: string; description: string }> = {
+  architecture: { label: 'Architecture', shortcut: 'A', description: 'Hierarchical cortex topology' },
+  dependencies:  { label: 'Dependencies',  shortcut: 'D', description: 'Dependency graph view' },
+  dataflow:      { label: 'Data Flow',      shortcut: 'F', description: 'Data movement through system' },
+  runtime:       { label: 'Runtime',        shortcut: 'R', description: 'Live runtime connections' },
+  package:       { label: 'Package',        shortcut: 'P', description: 'Module & package breakdown' },
+}
+
+export type RuntimeStatus = 'running' | 'stopped' | 'warning' | 'initializing' | 'planned'
+
 interface AppState {
   // World Navigation
   currentWorld: World
@@ -507,6 +523,36 @@ interface AppState {
   setZoomLevel: (level: ZoomLevel) => void
   focusedCortex: CortexId | null
   setFocusedCortex: (cortex: CortexId | null) => void
+
+  // Focus mode (dims unrelated nodes)
+  focusMode: boolean
+  setFocusMode: (on: boolean) => void
+
+  // Layout
+  layoutMode: LayoutMode
+  setLayoutMode: (mode: LayoutMode) => void
+
+  // Search
+  searchQuery: string
+  setSearchQuery: (q: string) => void
+
+  // Graph viewport
+  graphZoom: number
+  setGraphZoom: (z: number) => void
+  graphPan: { x: number; y: number }
+  setGraphPan: (pan: { x: number; y: number }) => void
+
+  // Hovered node
+  hoveredNode: string | null
+  setHoveredNode: (id: string | null) => void
+
+  // Runtime status per cortex
+  runtimeStatus: Record<CortexId, RuntimeStatus>
+  setRuntimeStatus: (id: CortexId, status: RuntimeStatus) => void
+
+  // Minimap
+  minimapVisible: boolean
+  setMinimapVisible: (v: boolean) => void
 
   // Inspector
   inspectorOpen: boolean
@@ -550,6 +596,43 @@ export const useAppStore = create<AppState>((set, get) => ({
   focusedCortex: null,
   setFocusedCortex: (cortex) => set({ focusedCortex: cortex }),
 
+  // Focus mode
+  focusMode: false,
+  setFocusMode: (on) => set({ focusMode: on }),
+
+  // Layout
+  layoutMode: 'architecture',
+  setLayoutMode: (mode) => set({ layoutMode: mode }),
+
+  // Search
+  searchQuery: '',
+  setSearchQuery: (q) => set({ searchQuery: q }),
+
+  // Graph viewport
+  graphZoom: 1,
+  setGraphZoom: (z) => set({ graphZoom: z }),
+  graphPan: { x: 0, y: 0 },
+  setGraphPan: (pan) => set({ graphPan: pan }),
+
+  // Hovered node
+  hoveredNode: null,
+  setHoveredNode: (id) => set({ hoveredNode: id }),
+
+  // Runtime status
+  runtimeStatus: {
+    vajra: 'running',
+    piras: 'running',
+    client: 'running',
+    scada: 'planned',
+    business: 'planned',
+  },
+  setRuntimeStatus: (id, status) =>
+    set((s) => ({ runtimeStatus: { ...s.runtimeStatus, [id]: status } })),
+
+  // Minimap
+  minimapVisible: true,
+  setMinimapVisible: (v) => set({ minimapVisible: v }),
+
   // Inspector
   inspectorOpen: true,
   setInspectorOpen: (open) => set({ inspectorOpen: open }),
@@ -572,7 +655,6 @@ export const useAppStore = create<AppState>((set, get) => ({
   toggleTheme: () => {
     const newTheme = get().theme === 'dark' ? 'light' : 'dark'
     localStorage.setItem('theme', newTheme)
-    // Apply class to document
     if (newTheme === 'dark') {
       document.documentElement.classList.add('dark')
     } else {

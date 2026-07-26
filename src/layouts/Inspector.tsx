@@ -1,102 +1,163 @@
 import { useAppStore, CORTEXES, WORLD_META } from '../stores/appStore'
+import type { RuntimeStatus } from '../stores/appStore'
 
 /* ============================================
-   INSPECTOR PANEL
-   Contextual details panel (right side)
-   Inspired by: Unreal Engine, Blender, Figma
+   INSPECTOR — Rich Architecture Property Panel
+   - World overview with engineering stats
+   - Cortex inspector: domains, connections, incoming deps
+   - Domain inspector: modules with type icons
+   - Module inspector: full dependency view
    ============================================ */
 
-export function Inspector() {
-  const selection = useAppStore((s) => s.selection)
-  const currentWorld = useAppStore((s) => s.currentWorld)
-  const inspectorOpen = useAppStore((s) => s.inspectorOpen)
+const STATUS_COLOR: Record<RuntimeStatus, string> = {
+  running:      '#22c55e',
+  stopped:      '#ef4444',
+  warning:      '#f59e0b',
+  initializing: '#3b82f6',
+  planned:      '#6b7280',
+}
 
+const STATUS_LABEL: Record<RuntimeStatus, string> = {
+  running:      'Running',
+  stopped:      'Stopped',
+  warning:      'Warning',
+  initializing: 'Initializing',
+  planned:      'Planned',
+}
+
+export function Inspector() {
+  const selection     = useAppStore((s) => s.selection)
+  const inspectorOpen = useAppStore((s) => s.inspectorOpen)
   if (!inspectorOpen) return null
 
-  // World-specific overview when nothing selected
-  if (!selection) {
-    return <WorldOverviewInspector />
-  }
-
-  // Selection-based content
-  if (selection.type === 'cortex') {
-    return <CortexInspector cortexId={selection.cortexId!} />
-  }
-
-  if (selection.type === 'domain') {
-    return <DomainInspector cortexId={selection.cortexId!} domainId={selection.domainId!} />
-  }
-
-  if (selection.type === 'module') {
-    return <ModuleInspector cortexId={selection.cortexId!} domainId={selection.domainId!} moduleId={selection.id} />
-  }
-
+  if (!selection)                  return <WorldOverviewInspector />
+  if (selection.type === 'cortex') return <CortexInspector cortexId={selection.cortexId!} />
+  if (selection.type === 'domain') return <DomainInspector cortexId={selection.cortexId!} domainId={selection.domainId!} />
+  if (selection.type === 'module') return <ModuleInspector cortexId={selection.cortexId!} domainId={selection.domainId!} moduleId={selection.id} />
   return <WorldOverviewInspector />
 }
 
 /* ============================================
-   WORLD OVERVIEW INSPECTOR
+   WORLD OVERVIEW
    ============================================ */
 
 function WorldOverviewInspector() {
-  const currentWorld = useAppStore((s) => s.currentWorld)
+  const currentWorld  = useAppStore((s) => s.currentWorld)
+  const setSelection  = useAppStore((s) => s.setSelection)
+  const runtimeStatus = useAppStore((s) => s.runtimeStatus)
+  const layoutMode    = useAppStore((s) => s.layoutMode)
   const meta = WORLD_META[currentWorld]
-  const activeCortexes = CORTEXES.filter(c => c.status === 'active' || c.status === 'stable')
+
+  const activeCortexes  = CORTEXES.filter(c => c.status === 'active' || c.status === 'stable')
   const plannedCortexes = CORTEXES.filter(c => c.status === 'planned')
+  const totalDomains    = activeCortexes.reduce((a, c) => a + c.domains.length, 0)
+  const totalModules    = activeCortexes.reduce((a, c) => a + c.domains.reduce((b, d) => b + d.modules.length, 0), 0)
+  const totalConns      = CORTEXES.reduce((a, c) => a + c.connections.length, 0)
+  const runningCount    = activeCortexes.filter(c => runtimeStatus[c.id] === 'running').length
 
   return (
     <div className="h-full overflow-y-auto">
-      {/* Header */}
+      {/* World context */}
       <div className="inspector-section">
-        <div className="heading-sm mb-1">Current View</div>
-        <div className="heading-lg capitalize mb-1">{currentWorld}</div>
-        <div className="text-secondary text-sm">{meta.question}</div>
-        <div className="caption mt-1">{meta.description}</div>
+        <div className="heading-sm mb-2">Current View</div>
+        <div className="flex items-baseline gap-2 mb-1">
+          <div className="heading-lg capitalize">{currentWorld}</div>
+          <div className="caption text-tertiary">{meta.question}</div>
+        </div>
+        <div className="caption">{meta.description}</div>
+        <div className="mt-2 text-xs text-tertiary">Layout: <span className="text-secondary capitalize">{layoutMode}</span></div>
       </div>
 
-      {/* System Status */}
+      {/* Engineering stats */}
       <div className="inspector-section">
-        <div className="heading-sm mb-3">System Status</div>
-        
+        <div className="heading-sm mb-3">System Metrics</div>
+        <div className="grid grid-cols-2 gap-2">
+          <MetricPill label="Running Cortexes" value={`${runningCount}/${activeCortexes.length}`} color="var(--status-success)" />
+          <MetricPill label="Total Modules"    value={totalModules.toString()}                     color="var(--cortex-vajra)" />
+          <MetricPill label="Domains"          value={totalDomains.toString()}                    color="var(--cortex-piras)" />
+          <MetricPill label="Connections"      value={totalConns.toString()}                      color="var(--cortex-client)" />
+          <MetricPill label="Planned"          value={plannedCortexes.length.toString()}          color="var(--text-tertiary)" />
+          <MetricPill label="Active Services"  value={runningCount.toString()}                    color="var(--status-success)" />
+        </div>
+      </div>
+
+      {/* Cortex health table */}
+      <div className="inspector-section">
+        <div className="heading-sm mb-3">Cortex Status</div>
         <div className="space-y-2">
-          {activeCortexes.map((cortex) => (
-            <CortexStatusRow key={cortex.id} cortex={cortex} />
+          {CORTEXES.map(cortex => {
+            const status = runtimeStatus[cortex.id]
+            const domainCount  = cortex.domains.length
+            const moduleCount  = cortex.domains.reduce((a, d) => a + d.modules.length, 0)
+            return (
+              <div
+                key={cortex.id}
+                className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-[var(--bg-hover)] cursor-pointer transition-colors"
+                onClick={() => setSelection({ type: 'cortex', id: cortex.id, cortexId: cortex.id })}
+              >
+                <div className="w-2 h-2 rounded-full shrink-0 flex-none"
+                  style={{ backgroundColor: STATUS_COLOR[status] }} />
+                <div className="w-2 h-2 rounded-sm shrink-0" style={{ backgroundColor: cortex.color }} />
+                <span className="text-sm flex-1 font-medium">{cortex.name}</span>
+                <span className="text-[10px] text-tertiary">{domainCount}d</span>
+                <span className="text-[10px] text-tertiary">{moduleCount}m</span>
+                <span className="text-[10px] px-1 rounded" style={{ color: STATUS_COLOR[status], backgroundColor: `${STATUS_COLOR[status]}15` }}>
+                  {STATUS_LABEL[status]}
+                </span>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Edge legend */}
+      <div className="inspector-section">
+        <div className="heading-sm mb-3">Edge Types</div>
+        <div className="space-y-1.5">
+          {[
+            { type: 'orchestration', color: '#D97706', style: 'solid',   desc: 'Primary orchestration' },
+            { type: 'retrieval',     color: '#3B82F6', style: 'solid',   desc: 'Data retrieval' },
+            { type: 'context',       color: '#10B981', style: 'dashed',  desc: 'Context mounting' },
+            { type: 'event',         color: '#8B5CF6', style: 'animated',desc: 'Event streaming' },
+            { type: 'automation',    color: '#06B6D4', style: 'dotted',  desc: 'Automation feed' },
+          ].map(e => (
+            <div key={e.type} className="flex items-center gap-2.5">
+              <div className="w-8 flex items-center">
+                <svg width="28" height="8" viewBox="0 0 28 8">
+                  <line x1="0" y1="4" x2="22" y2="4"
+                    stroke={e.color} strokeWidth="1.5"
+                    strokeDasharray={e.style === 'dashed' ? '4 2' : e.style === 'dotted' ? '2 3' : undefined} />
+                  <path d="M22 1L27 4L22 7" fill={e.color} opacity="0.8" />
+                </svg>
+              </div>
+              <span className="text-xs text-secondary flex-1">{e.desc}</span>
+              <span className="text-[10px] text-tertiary capitalize">{e.type}</span>
+            </div>
           ))}
         </div>
-
-        {plannedCortexes.length > 0 && (
-          <>
-            <div className="divider" />
-            <div className="heading-sm mb-3">Planned</div>
-            <div className="space-y-2 opacity-50">
-              {plannedCortexes.map((cortex) => (
-                <CortexStatusRow key={cortex.id} cortex={cortex} />
-              ))}
-            </div>
-          </>
-        )}
       </div>
 
-      {/* Quick Stats */}
-      <div className="inspector-section">
-        <div className="heading-sm mb-3">Statistics</div>
-        <div className="grid grid-cols-2 gap-3">
-          <StatCard label="Cortexes" value={activeCortexes.length.toString()} />
-          <StatCard label="Domains" value={activeCortexes.reduce((a, c) => a + c.domains.length, 0).toString()} />
-          <StatCard label="Modules" value={activeCortexes.reduce((a, c) => a + c.domains.reduce((b, d) => b + d.modules.length, 0), 0).toString()} />
-          <StatCard label="Connections" value={activeCortexes.reduce((a, c) => a + c.connections.length, 0).toString()} />
-        </div>
-      </div>
-
-      {/* Keyboard Shortcuts */}
+      {/* Keyboard shortcuts */}
       <div className="inspector-section">
         <div className="heading-sm mb-3">Shortcuts</div>
-        <div className="space-y-2 text-sm">
-          <ShortcutRow keys={['1']} label="Explore" />
-          <ShortcutRow keys={['2']} label="Observe" />
-          <ShortcutRow keys={['3']} label="Understand" />
-          <ShortcutRow keys={['4']} label="Evolve" />
-          <ShortcutRow keys={['Esc']} label="Clear Selection" />
+        <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs">
+          {[
+            ['/', 'Search'],
+            ['F', 'Focus mode'],
+            ['Esc', 'Clear'],
+            ['1–4', 'Worlds'],
+            ['[', 'Nav panel'],
+            [']', 'Inspector'],
+            ['A', 'Architecture'],
+            ['D', 'Dependencies'],
+            ['R', 'Runtime'],
+            ['M', 'Minimap'],
+          ].map(([key, label]) => (
+            <div key={key} className="flex items-center justify-between">
+              <span className="text-tertiary">{label}</span>
+              <kbd className="kbd">{key}</kbd>
+            </div>
+          ))}
         </div>
       </div>
     </div>
@@ -108,85 +169,115 @@ function WorldOverviewInspector() {
    ============================================ */
 
 function CortexInspector({ cortexId }: { cortexId: string }) {
+  const setSelection  = useAppStore((s) => s.setSelection)
+  const runtimeStatus = useAppStore((s) => s.runtimeStatus)
   const cortex = CORTEXES.find(c => c.id === cortexId)
   if (!cortex) return null
+
+  const status       = runtimeStatus[cortex.id as keyof typeof runtimeStatus]
+  const moduleCount  = cortex.domains.reduce((a, d) => a + d.modules.length, 0)
+
+  // Compute incoming connections (who points TO this cortex)
+  const incomingConns = CORTEXES
+    .filter(c => c.id !== cortex.id)
+    .flatMap(c => c.connections
+      .filter(conn => conn.target === cortex.id)
+      .map(conn => ({ source: c, conn }))
+    )
 
   return (
     <div className="h-full overflow-y-auto">
       {/* Header */}
       <div className="inspector-section">
-        <div className="flex items-center gap-3 mb-3">
-          <div 
-            className="w-4 h-4 rounded"
-            style={{ backgroundColor: cortex.color }}
-          />
-          <div>
-            <div className="heading-lg">{cortex.fullName}</div>
-            <div className="caption">{cortex.role}</div>
+        <div className="flex items-start gap-3 mb-3">
+          <div className="w-4 h-4 rounded mt-0.5 shrink-0" style={{ backgroundColor: cortex.color }} />
+          <div className="flex-1 min-w-0">
+            <div className="heading-lg leading-tight">{cortex.fullName}</div>
+            <div className="caption mt-0.5 leading-relaxed">{cortex.role}</div>
           </div>
         </div>
-        <StatusBadge status={cortex.status} />
+        {/* Status + metric row */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs"
+            style={{ backgroundColor: `${STATUS_COLOR[status]}15`, color: STATUS_COLOR[status] }}>
+            <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: STATUS_COLOR[status] }} />
+            {STATUS_LABEL[status]}
+          </span>
+          <StatusBadge status={cortex.status} />
+          <span className="text-[10px] text-tertiary">{cortex.domains.length} domains</span>
+          <span className="text-[10px] text-tertiary">{moduleCount} modules</span>
+        </div>
       </div>
 
-      {/* Domains */}
+      {/* Domains (clickable) */}
       <div className="inspector-section">
-        <div className="heading-sm mb-3">Domains ({cortex.domains.length})</div>
-        <div className="space-y-2">
-          {cortex.domains.map((domain) => (
-            <div key={domain.id} className="surface rounded p-3">
-              <div className="flex justify-between items-center mb-1">
-                <span className="label">{domain.name}</span>
-                <span className="caption">{domain.modules.length} modules</span>
+        <div className="heading-sm mb-2">Domains ({cortex.domains.length})</div>
+        <div className="space-y-1">
+          {cortex.domains.map(domain => (
+            <div
+              key={domain.id}
+              className="flex items-center justify-between px-2 py-1.5 rounded hover:bg-[var(--bg-hover)] cursor-pointer transition-colors group"
+              onClick={() => setSelection({ type: 'domain', id: domain.id, cortexId: cortex.id, domainId: domain.id })}
+            >
+              <div className="flex items-center gap-2">
+                <svg width="11" height="11" viewBox="0 0 11 11" fill="none" className="opacity-40">
+                  <rect x="1" y="1" width="4" height="4" rx="0.8" stroke="currentColor" strokeWidth="1.1"/>
+                  <rect x="6" y="1" width="4" height="4" rx="0.8" stroke="currentColor" strokeWidth="1.1"/>
+                  <rect x="1" y="6" width="4" height="4" rx="0.8" stroke="currentColor" strokeWidth="1.1"/>
+                  <rect x="6" y="6" width="4" height="4" rx="0.8" stroke="currentColor" strokeWidth="1.1"/>
+                </svg>
+                <span className="text-sm text-secondary group-hover:text-primary transition-colors">{domain.name}</span>
               </div>
-              <div className="flex flex-wrap gap-1 mt-2">
-                {domain.modules.map((mod) => (
-                  <span 
-                    key={mod.id}
-                    className="text-[10px] px-2 py-0.5 rounded"
-                    style={{ 
-                      backgroundColor: cortex.colorSubtle,
-                      color: cortex.color
-                    }}
-                  >
-                    {mod.name}
-                  </span>
-                ))}
-              </div>
+              <span className="text-[10px] text-tertiary">{domain.modules.length}m</span>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Connections */}
+      {/* Outgoing connections */}
       {cortex.connections.length > 0 && (
         <div className="inspector-section">
-          <div className="heading-sm mb-3">Connections ({cortex.connections.length})</div>
+          <div className="heading-sm mb-2">Outgoing ({cortex.connections.length})</div>
           <div className="space-y-2">
             {cortex.connections.map((conn, i) => {
               const target = CORTEXES.find(c => c.id === conn.target)
               return (
-                <div key={i} className="surface rounded p-3">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div 
-                      className="w-2 h-2 rounded-full"
-                      style={{ backgroundColor: target?.color }}
-                    />
-                    <span className="label">{target?.name}</span>
-                    <span className="caption ml-auto">{conn.type}</span>
+                <div key={i} className="surface rounded p-2.5">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: target?.color }} />
+                    <span className="label flex-1">{target?.name}</span>
+                    <EdgeTypeBadge type={conn.type} />
                   </div>
-                  <div className="text-sm text-secondary">{conn.label}</div>
-                  <div className="mt-2 h-1 bg-white/5 rounded overflow-hidden">
-                    <div 
-                      className="h-full rounded"
-                      style={{ 
-                        width: `${conn.strength * 100}%`,
-                        backgroundColor: cortex.color 
-                      }}
-                    />
+                  <div className="text-xs text-secondary mb-1.5">{conn.label}</div>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 h-1 bg-[var(--bg-elevated)] rounded overflow-hidden">
+                      <div className="h-full rounded transition-all"
+                        style={{ width: `${conn.strength * 100}%`, backgroundColor: cortex.color }} />
+                    </div>
+                    <span className="text-[10px] text-tertiary">{(conn.strength * 100).toFixed(0)}%</span>
                   </div>
                 </div>
               )
             })}
+          </div>
+        </div>
+      )}
+
+      {/* Incoming connections */}
+      {incomingConns.length > 0 && (
+        <div className="inspector-section">
+          <div className="heading-sm mb-2">Incoming ({incomingConns.length})</div>
+          <div className="space-y-2">
+            {incomingConns.map(({ source, conn }, i) => (
+              <div key={i} className="surface rounded p-2.5">
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: source.color }} />
+                  <span className="label flex-1">{source.name}</span>
+                  <EdgeTypeBadge type={conn.type} />
+                </div>
+                <div className="text-xs text-secondary">{conn.label}</div>
+              </div>
+            ))}
           </div>
         </div>
       )}
@@ -199,41 +290,56 @@ function CortexInspector({ cortexId }: { cortexId: string }) {
    ============================================ */
 
 function DomainInspector({ cortexId, domainId }: { cortexId: string; domainId: string }) {
+  const setSelection = useAppStore((s) => s.setSelection)
   const cortex = CORTEXES.find(c => c.id === cortexId)
   const domain = cortex?.domains.find(d => d.id === domainId)
   if (!cortex || !domain) return null
 
   return (
     <div className="h-full overflow-y-auto">
-      {/* Header */}
+      {/* Breadcrumb */}
       <div className="inspector-section">
-        <div className="caption mb-1" style={{ color: cortex.color }}>{cortex.name}</div>
+        <div className="flex items-center gap-1 text-xs mb-2">
+          <button className="hover:text-primary text-tertiary transition-colors"
+            onClick={() => setSelection({ type: 'cortex', id: cortex.id, cortexId: cortex.id })}>
+            {cortex.name}
+          </button>
+          <span className="text-tertiary">/</span>
+          <span className="text-primary font-medium">{domain.name}</span>
+        </div>
         <div className="heading-lg mb-1">{domain.name}</div>
-        <div className="text-secondary text-sm">{domain.modules.length} modules</div>
+        <div className="caption">{domain.modules.length} modules · {cortex.name} cortex</div>
+        <div className="mt-2">
+          <StatusBadge status={cortex.status} />
+        </div>
       </div>
 
       {/* Modules */}
       <div className="inspector-section">
-        <div className="heading-sm mb-3">Modules</div>
-        <div className="space-y-2">
-          {domain.modules.map((mod) => (
-            <div key={mod.id} className="surface rounded p-3">
-              <div className="label">{mod.name}</div>
-              {mod.description && (
-                <div className="caption mt-1">{mod.description}</div>
-              )}
+        <div className="heading-sm mb-2">Modules</div>
+        <div className="space-y-1.5">
+          {domain.modules.map(mod => (
+            <div
+              key={mod.id}
+              className="surface rounded p-2.5 hover:bg-[var(--bg-elevated)] cursor-pointer transition-colors"
+              onClick={() => setSelection({ type: 'module', id: mod.id, cortexId: cortex.id, domainId: domain.id })}
+            >
+              <div className="label mb-0.5" style={{ color: cortex.color }}>{mod.name}</div>
+              {mod.description && <div className="caption">{mod.description}</div>}
             </div>
           ))}
         </div>
       </div>
 
-      {/* Breadcrumb */}
+      {/* Parent info */}
       <div className="inspector-section">
-        <div className="heading-sm mb-2">Path</div>
-        <div className="flex items-center gap-1 text-sm">
-          <span style={{ color: cortex.color }}>{cortex.name}</span>
-          <span className="text-tertiary">/</span>
-          <span className="text-secondary">{domain.name}</span>
+        <div className="heading-sm mb-2">Parent Cortex</div>
+        <div className="surface rounded p-2.5">
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded" style={{ backgroundColor: cortex.color }} />
+            <span className="label">{cortex.fullName}</span>
+          </div>
+          <div className="caption mt-1">{cortex.role}</div>
         </div>
       </div>
     </div>
@@ -245,42 +351,112 @@ function DomainInspector({ cortexId, domainId }: { cortexId: string; domainId: s
    ============================================ */
 
 function ModuleInspector({ cortexId, domainId, moduleId }: { cortexId: string; domainId: string; moduleId: string }) {
+  const setSelection = useAppStore((s) => s.setSelection)
   const cortex = CORTEXES.find(c => c.id === cortexId)
   const domain = cortex?.domains.find(d => d.id === domainId)
-  const mod = domain?.modules.find(m => m.id === moduleId)
+  const mod    = domain?.modules.find(m => m.id === moduleId)
   if (!cortex || !domain || !mod) return null
+
+  // Find sibling modules in same domain
+  const siblings = domain.modules.filter(m => m.id !== mod.id)
+
+  // Find modules in same-named domains across other cortexes (related)
+  const relatedModules = CORTEXES
+    .filter(c => c.id !== cortex.id)
+    .flatMap(c => c.domains
+      .filter(d => d.id === domain.id || d.name === domain.name)
+      .flatMap(d => d.modules.slice(0, 3).map(m => ({ cortex: c, domain: d, mod: m })))
+    ).slice(0, 4)
 
   return (
     <div className="h-full overflow-y-auto">
-      {/* Header */}
+      {/* Breadcrumb */}
       <div className="inspector-section">
-        <div className="caption mb-1" style={{ color: cortex.color }}>{cortex.name} / {domain.name}</div>
-        <div className="heading-lg mb-2">{mod.name}</div>
-        {mod.description && (
-          <div className="text-secondary text-sm">{mod.description}</div>
-        )}
+        <div className="flex items-center gap-1 text-xs mb-2 flex-wrap">
+          <button className="hover:text-primary text-tertiary transition-colors"
+            onClick={() => setSelection({ type: 'cortex', id: cortex.id, cortexId: cortex.id })}>
+            {cortex.name}
+          </button>
+          <span className="text-tertiary">/</span>
+          <button className="hover:text-primary text-tertiary transition-colors"
+            onClick={() => setSelection({ type: 'domain', id: domain.id, cortexId: cortex.id, domainId: domain.id })}>
+            {domain.name}
+          </button>
+          <span className="text-tertiary">/</span>
+          <span className="text-primary font-medium">{mod.name}</span>
+        </div>
+        <div className="heading-lg mb-1">{mod.name}</div>
+        {mod.description && <div className="text-secondary text-sm leading-relaxed">{mod.description}</div>}
       </div>
 
-      {/* Properties Placeholder */}
+      {/* Properties */}
       <div className="inspector-section">
-        <div className="heading-sm mb-3">Properties</div>
+        <div className="heading-sm mb-2">Properties</div>
         <div className="space-y-1">
-          <PropertyRow label="Type" value="Module" />
-          <PropertyRow label="Cortex" value={cortex.name} />
-          <PropertyRow label="Domain" value={domain.name} />
-          <PropertyRow label="Status" value="Active" />
+          <PropertyRow label="Type"    value="Module" />
+          <PropertyRow label="Cortex"  value={cortex.name} valueColor={cortex.color} />
+          <PropertyRow label="Domain"  value={domain.name} />
+          <PropertyRow label="Status"  value={cortex.status} />
+          <PropertyRow label="ID"      value={mod.id} mono />
         </div>
       </div>
 
-      {/* Breadcrumb */}
+      {/* Sibling modules in same domain */}
+      {siblings.length > 0 && (
+        <div className="inspector-section">
+          <div className="heading-sm mb-2">Siblings in {domain.name} ({siblings.length})</div>
+          <div className="space-y-1">
+            {siblings.map(s => (
+              <div
+                key={s.id}
+                className="flex items-center gap-2 px-2 py-1 rounded hover:bg-[var(--bg-hover)] cursor-pointer text-xs text-secondary hover:text-primary transition-colors"
+                onClick={() => setSelection({ type: 'module', id: s.id, cortexId: cortex.id, domainId: domain.id })}
+              >
+                <div className="w-1 h-1 rounded-full" style={{ backgroundColor: cortex.color }} />
+                {s.name}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Related (same domain name in other cortexes) */}
+      {relatedModules.length > 0 && (
+        <div className="inspector-section">
+          <div className="heading-sm mb-2">Related Modules</div>
+          <div className="space-y-1">
+            {relatedModules.map(({ cortex: rc, domain: rd, mod: rm }, i) => (
+              <div key={i}
+                className="flex items-center gap-2 px-2 py-1 rounded hover:bg-[var(--bg-hover)] cursor-pointer text-xs transition-colors"
+                onClick={() => setSelection({ type: 'module', id: rm.id, cortexId: rc.id, domainId: rd.id })}
+              >
+                <div className="w-1.5 h-1.5 rounded-sm shrink-0" style={{ backgroundColor: rc.color }} />
+                <span className="text-secondary">{rm.name}</span>
+                <span className="ml-auto text-tertiary">{rc.name}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Parent domain & cortex */}
       <div className="inspector-section">
-        <div className="heading-sm mb-2">Path</div>
-        <div className="flex items-center gap-1 text-sm flex-wrap">
-          <span style={{ color: cortex.color }}>{cortex.name}</span>
-          <span className="text-tertiary">/</span>
-          <span className="text-secondary">{domain.name}</span>
-          <span className="text-tertiary">/</span>
-          <span className="text-primary">{mod.name}</span>
+        <div className="heading-sm mb-2">Hierarchy</div>
+        <div className="space-y-1.5">
+          <div className="surface rounded p-2">
+            <div className="flex items-center gap-2">
+              <div className="w-2.5 h-2.5 rounded" style={{ backgroundColor: cortex.color }} />
+              <span className="label">{cortex.name}</span>
+              <span className="caption ml-auto">{cortex.status}</span>
+            </div>
+          </div>
+          <div className="surface rounded p-2 ml-3">
+            <div className="text-xs text-secondary">{domain.name}</div>
+            <div className="caption">{domain.modules.length} modules</div>
+          </div>
+          <div className="surface rounded p-2 ml-6" style={{ borderLeft: `2px solid ${cortex.color}` }}>
+            <div className="text-xs font-medium" style={{ color: cortex.color }}>{mod.name}</div>
+          </div>
         </div>
       </div>
     </div>
@@ -291,67 +467,56 @@ function ModuleInspector({ cortexId, domainId, moduleId }: { cortexId: string; d
    HELPER COMPONENTS
    ============================================ */
 
-function CortexStatusRow({ cortex }: { cortex: typeof CORTEXES[0] }) {
+function MetricPill({ label, value, color }: { label: string; value: string; color: string }) {
   return (
-    <div className="flex items-center gap-2">
-      <div 
-        className={`status-dot ${cortex.status === 'planned' ? 'planned' : 'active'}`}
-        style={{ backgroundColor: cortex.status !== 'planned' ? cortex.color : undefined }}
-      />
-      <span className="text-sm flex-1">{cortex.name}</span>
-      <span className="caption">{cortex.role}</span>
-    </div>
-  )
-}
-
-function StatCard({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="surface rounded p-3 text-center">
-      <div className="heading-lg">{value}</div>
-      <div className="caption">{label}</div>
+    <div className="surface rounded p-2.5 text-center">
+      <div className="text-lg font-semibold leading-tight" style={{ color }}>{value}</div>
+      <div className="caption mt-0.5">{label}</div>
     </div>
   )
 }
 
 function StatusBadge({ status }: { status: string }) {
   const colors: Record<string, string> = {
-    active: 'var(--status-success)',
-    stable: 'var(--cortex-client)',
+    active:       'var(--status-success)',
+    stable:       'var(--cortex-client)',
     experimental: 'var(--status-warning)',
-    planned: 'var(--text-tertiary)',
+    planned:      'var(--text-tertiary)',
   }
-
   return (
-    <span 
-      className="inline-block px-2 py-0.5 rounded text-xs font-medium"
-      style={{ 
-        backgroundColor: `${colors[status]}20`,
-        color: colors[status]
-      }}
-    >
+    <span className="inline-block px-2 py-0.5 rounded text-[11px] font-medium"
+      style={{ backgroundColor: `${colors[status]}20`, color: colors[status] }}>
       {status}
     </span>
   )
 }
 
-function PropertyRow({ label, value }: { label: string; value: string }) {
+const EDGE_TYPE_COLORS: Record<string, string> = {
+  orchestration: '#D97706',
+  retrieval:     '#3B82F6',
+  context:       '#10B981',
+  event:         '#8B5CF6',
+  automation:    '#06B6D4',
+}
+
+function EdgeTypeBadge({ type }: { type: string }) {
+  const color = EDGE_TYPE_COLORS[type] || '#6b7280'
   return (
-    <div className="inspector-row">
-      <span className="label">{label}</span>
-      <span className="value">{value}</span>
-    </div>
+    <span className="text-[10px] px-1.5 py-0.5 rounded capitalize"
+      style={{ backgroundColor: `${color}18`, color }}>
+      {type}
+    </span>
   )
 }
 
-function ShortcutRow({ keys, label }: { keys: string[]; label: string }) {
+function PropertyRow({ label, value, valueColor, mono }: { label: string; value: string; valueColor?: string; mono?: boolean }) {
   return (
-    <div className="flex items-center justify-between">
-      <span className="text-secondary">{label}</span>
-      <div className="flex gap-1">
-        {keys.map((key) => (
-          <kbd key={key} className="kbd">{key}</kbd>
-        ))}
-      </div>
+    <div className="inspector-row">
+      <span className="label">{label}</span>
+      <span className={`value text-xs ${mono ? 'font-mono' : ''}`}
+        style={{ color: valueColor || 'var(--text-primary)' }}>
+        {value}
+      </span>
     </div>
   )
 }

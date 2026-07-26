@@ -1,6 +1,5 @@
 import { type ReactNode, useEffect } from 'react'
 import { useAppStore } from '../stores/appStore'
-import type { World } from '../stores/appStore'
 import { WorldNav } from './WorldNav'
 import { NavTree } from './NavTree'
 import { Inspector } from './Inspector'
@@ -27,49 +26,74 @@ interface AppShellProps {
 }
 
 export function AppShell({ children }: AppShellProps) {
-  const setWorld = useAppStore((s) => s.setWorld)
-  const setSelection = useAppStore((s) => s.setSelection)
-  const navCollapsed = useAppStore((s) => s.navCollapsed)
-  const inspectorOpen = useAppStore((s) => s.inspectorOpen)
-  const setNavCollapsed = useAppStore((s) => s.setNavCollapsed)
-  const setInspectorOpen = useAppStore((s) => s.setInspectorOpen)
+  const setWorld          = useAppStore((s) => s.setWorld)
+  const setSelection      = useAppStore((s) => s.setSelection)
+  const navCollapsed      = useAppStore((s) => s.navCollapsed)
+  const inspectorOpen     = useAppStore((s) => s.inspectorOpen)
+  const setNavCollapsed   = useAppStore((s) => s.setNavCollapsed)
+  const setInspectorOpen  = useAppStore((s) => s.setInspectorOpen)
+  const setLayoutMode     = useAppStore((s) => s.setLayoutMode)
+  const focusMode         = useAppStore((s) => s.focusMode)
+  const setFocusMode      = useAppStore((s) => s.setFocusMode)
+  const minimapVisible    = useAppStore((s) => s.minimapVisible)
+  const setMinimapVisible = useAppStore((s) => s.setMinimapVisible)
 
   // Keyboard shortcuts
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      // Ignore if typing in input
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+      const target = e.target as HTMLElement
+      const isTyping = target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement
+
+      // Search focus: / key (even outside input)
+      if (e.key === '/' && !isTyping) {
+        e.preventDefault()
+        // Focus the search input in NavTree via a custom event
+        window.dispatchEvent(new CustomEvent('focus-search'))
         return
       }
 
+      // Ignore remaining shortcuts if typing
+      if (isTyping) return
+
       switch (e.key) {
-        case '1':
-          setWorld('explore')
+        // World navigation
+        case '1': setWorld('explore');    break
+        case '2': setWorld('observe');    break
+        case '3': setWorld('understand'); break
+        case '4': setWorld('evolve');     break
+
+        // Layout modes (in Explore world)
+        case 'a': case 'A': setLayoutMode('architecture'); break
+        case 'd': case 'D': setLayoutMode('dependencies'); break
+        case 'r': case 'R': setLayoutMode('runtime');      break
+        case 'p': case 'P': setLayoutMode('package');      break
+
+        // Focus mode toggle
+        case 'f': case 'F':
+          setFocusMode(!focusMode)
           break
-        case '2':
-          setWorld('observe')
+
+        // Minimap toggle
+        case 'm': case 'M':
+          setMinimapVisible(!minimapVisible)
           break
-        case '3':
-          setWorld('understand')
-          break
-        case '4':
-          setWorld('evolve')
-          break
+
+        // Clear selection / focus
         case 'Escape':
           setSelection(null)
+          if (focusMode) setFocusMode(false)
           break
-        case '[':
-          setNavCollapsed(!navCollapsed)
-          break
-        case ']':
-          setInspectorOpen(!inspectorOpen)
-          break
+
+        // Panel toggles
+        case '[': setNavCollapsed(!navCollapsed);   break
+        case ']': setInspectorOpen(!inspectorOpen); break
       }
     }
 
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [setWorld, setSelection, navCollapsed, setNavCollapsed, inspectorOpen, setInspectorOpen])
+  }, [setWorld, setSelection, navCollapsed, setNavCollapsed, inspectorOpen, setInspectorOpen,
+      setLayoutMode, setFocusMode, focusMode, setMinimapVisible, minimapVisible])
 
   return (
     <div className="h-full w-full flex flex-col bg-[var(--bg-space)]">
