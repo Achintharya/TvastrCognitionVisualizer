@@ -587,13 +587,13 @@ function LayoutToolbar() {
   ]
 
   return (
-    <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1.5 px-3 py-2 rounded-xl surface-elevated shadow-md">
+    <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2.5 px-4 py-3 rounded-xl surface-elevated shadow-md">
       {modes.map(m => (
         <button
           key={m.id}
           onClick={() => setLayoutMode(m.id)}
           title={`${m.label} (${m.key})`}
-          className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 ${
+          className={`px-5 py-2.5 rounded-lg text-lg font-medium transition-all duration-150 ${
             layoutMode === m.id
               ? 'bg-[var(--brand-accent)] text-[var(--brand-accent-fg)] shadow-sm'
               : 'text-secondary hover:text-primary hover:bg-[var(--bg-hover)]'
