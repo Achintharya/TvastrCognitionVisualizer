@@ -168,7 +168,7 @@ export function NavTree() {
             onChange={e => setSearchQuery(e.target.value)}
             onKeyDown={e => { if (e.key === 'Escape') { setSearchQuery(''); searchRef.current?.blur() } }}
             placeholder="Search architecture…"
-            className="w-full pl-10 pr-10 rounded-xl bg-[var(--bg-elevated)] border-2 border-[var(--border-default)] text-primary placeholder:text-tertiary outline-none focus:border-[var(--brand-accent)] transition-colors"
+            className="w-full pl-12 pr-10 rounded-xl bg-[var(--bg-elevated)] border-2 border-[var(--border-default)] text-primary placeholder:text-tertiary outline-none focus:border-[var(--brand-accent)] transition-colors"
             style={{ fontSize: 15, height: 48, lineHeight: '48px' }}
           />
           {searchQuery && (
