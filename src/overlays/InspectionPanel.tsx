@@ -183,38 +183,54 @@ function ProcessPanel() {
 }
 
 function ClientPanel() {
+  const DOMAINS = [
+    { name: 'Identity',         desc: 'Client profile, factory ID' },
+    { name: 'Process',          desc: 'Shifts, schedules, parameters' },
+    { name: 'Quality',          desc: 'Gates, acceptance/rejection rules' },
+    { name: 'Topology',         desc: 'CAD models, critical regions' },
+    { name: 'Product',          desc: 'Product types, part definitions' },
+    { name: 'Operator',         desc: 'Workforce, shift assignments' },
+    { name: 'ERP',              desc: 'Field mappings, column schema' },
+    { name: 'SOPs',             desc: 'Operator, escalation, recovery' },
+    { name: 'Visual Refs',      desc: 'Reference parts, defect examples' },
+    { name: 'Knowledge',        desc: 'Defect KB, cause mappings' },
+    { name: 'PPAP',             desc: 'Part approval packages' },
+    { name: 'Sources',          desc: 'Raw PDFs, DOCX, XLSX, CAD' },
+    { name: 'Retrieval',        desc: 'Knowledge + metadata indexes' },
+    { name: 'Runtime Context',  desc: 'Active state (cognition-writable)' },
+  ]
+
   return (
     <div className="p-4 h-full overflow-y-auto">
-      <div className="holo-panel p-4">
+      <div className="holo-panel p-4 mb-3">
         <div className="text-sm text-white/60 tracking-wider mb-3">CLIENT CORTEX</div>
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           <div className="flex justify-between text-sm">
-            <span className="text-white/70">Client</span>
-            <span className="text-green-400">Client</span>
+            <span className="text-white/70">Role</span>
+            <span className="text-green-400">Semantic Factory Memory</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-white/70">Type</span>
-            <span className="text-white/90">Semantic Factory Memory</span>
+            <span className="text-white/70">Status</span>
+            <span className="text-green-400">stable</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-white/70">Mount Mode</span>
-            <span className="text-cyan-400">hybrid</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-white/70">Schema</span>
-            <span className="text-white/90">v1.0.0</span>
+            <span className="text-white/70">Domains</span>
+            <span className="text-cyan-400">{DOMAINS.length}</span>
           </div>
         </div>
-        <div className="mt-4 pt-3 border-t border-white/10">
-          <div className="text-sm text-white/60 mb-2">ACTIVE CONTEXTS</div>
-          <div className="space-y-1.5">
-            {['calibration', 'knowledge_domains', 'sop', 'ppap', 'visual_references', 'cad', 'erp', 'quality_gates'].map((ctx) => (
-              <div key={ctx} className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-green-400" />
-                <span className="text-sm text-white/70">{ctx}</span>
+      </div>
+      <div className="holo-panel p-4">
+        <div className="text-sm text-white/60 mb-2">KNOWLEDGE DOMAINS</div>
+        <div className="space-y-1.5">
+          {DOMAINS.map((d) => (
+            <div key={d.name} className="flex items-start gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-green-400 mt-1.5 shrink-0" />
+              <div>
+                <span className="text-sm text-white/80">{d.name}</span>
+                <span className="text-xs text-white/40 ml-2">{d.desc}</span>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>

@@ -22,7 +22,7 @@ const BOOT_LINES = [
   { text: '  → Lyapunov stability checks active', delay: 2450, color: '#22c55e' },
   { text: '', delay: 2600, color: '' },
   { text: 'Establishing neural pathways...', delay: 2700, color: '#ffffff80' },
-  { text: '  → 4 inter-cortex connections', delay: 2900, color: '#ffffff60' },
+  { text: '  → 5 inter-cortex connections', delay: 2900, color: '#ffffff60' },
   { text: '  → Event subscription active', delay: 3050, color: '#ffffff60' },
   { text: '', delay: 3200, color: '' },
   { text: 'COGNITION VISUALIZER v1.0 — READY', delay: 3400, color: '#00ffff' },
@@ -34,7 +34,7 @@ export function BootSequence({ onComplete }: Props) {
   const [fadeOut, setFadeOut] = useState(false)
 
   useEffect(() => {
-    const timers: NodeJS.Timeout[] = []
+    const timers: ReturnType<typeof setTimeout>[] = []
     BOOT_LINES.forEach((line, i) => {
       timers.push(setTimeout(() => setVisibleLines(i + 1), line.delay))
     })

@@ -64,71 +64,114 @@ export const useCortexStore = create<CortexState>((set) => ({
     {
       id: 'vajra',
       name: 'The Vajra Cortex',
-      role: 'Executive Intelligence',
+      role: 'Retrieval-First Executive Cognition',
       status: 'active',
-      color: '#00ffff',
+      color: '#f5a623',   // amber — matches design-system dark theme
       position: [0, 2.5, 0],
       modules: [
-        'Query Classifier', 'Query Router', 'Retrieval Engine',
-        'Context Compiler', 'Reasoning Engine', 'LLM Runtime',
-        'Memory System', 'Introspection', 'Investigation'
+        // Cognition
+        'Intent Classification', 'Reasoning Chains', 'Response Generation', 'LLM Runtime (Groq / OpenAI)',
+        // Retrieval
+        'Retrieval Engine', 'Retrieval Planner', 'Database Cognition', 'Adapters (PIRAS, ERP, Docs)',
+        // Context
+        'Context Compiler', 'Provenance', 'ClientCortex Integration',
+        // Executive
+        'Orchestrator',
+        // Investigation
+        'Audit Generation', 'Investigation Tracking',
+        // Voice
+        'TTS Runtime (Sarvam, Kokoro)', 'STT Runtime', 'Wake Word Detection', 'Voice Orchestration (11 langs)',
+        // Introspection
+        'AST Analysis', 'Dependency Graphs', 'Telemetry',
+        // Memory
+        'Session Memory',
+        // Observability
+        'Logging', 'Metrics', 'Tracing',
       ],
       connections: [
         { target: 'piras', type: 'orchestration', strength: 0.9 },
-        { target: 'client', type: 'retrieval', strength: 0.7 },
-      ]
+        { target: 'piras', type: 'retrieval', strength: 0.8 },
+        { target: 'client', type: 'retrieval', strength: 0.85 },
+      ],
     },
     {
       id: 'piras',
-      name: 'The PIRAS Cortex',
-      role: 'Perception & Reasoning',
+      name: 'The PIRAS Cortex (TvastrRAS)',
+      role: 'AI-Powered Casting Defect Detection & RCA',
       status: 'active',
-      color: '#8b5cf6',
+      color: '#5b9cf5',   // blue — matches design-system dark theme
       position: [-3.5, -1, 0],
       modules: [
-        'Quality Gate', 'YOLO Detection', 'Patch Classification',
-        'Signal Extraction', 'Signal Classification', 'Consolidation',
-        'Multi-Signal Fusion', 'Energy Reasoning', 'Decision Engine',
-        'Telemetry', 'Persistence', 'Plant Intelligence'
+        // Vision
+        'YOLO Detection', 'Patch System (256×256 / 128px)', 'Anomaly Detection',
+        // Signals
+        'Signal Extraction (11 signals)', 'Signal Classification (40% weight)', 'Multi-Signal Fusion',
+        // Reasoning
+        'Energy Reasoning (Phase-K)', 'Ownership Classifier (6 contracts)', 'Consolidation', 'Decision Engine',
+        // Pipeline
+        '11-Stage Pipeline (Stage 0–10)', 'Fast Path (<100ms)', 'Slow Path (<250ms)',
+        // Intelligence
+        'Auto-Calibration (ACO/MOS)', 'Fingerprinting (DBSCAN)', 'Prototype System', 'SCRATA System', 'Plant Intelligence (TIER_3)',
+        // Traceability
+        'Heat Resolver', 'ERP Integration', 'Traceability Engine',
+        // Persistence
+        'Database', 'Failure Memory',
+        // API & Deployment
+        'REST API (25 endpoints)', 'Batch Processing', 'Embedded Python v2.0', 'OTA Updates', 'Licensing (TIER_1/2/3)',
       ],
       connections: [
         { target: 'client', type: 'context_mount', strength: 0.8 },
-        { target: 'vajra', type: 'event_stream', strength: 0.6 },
-      ]
+        { target: 'vajra', type: 'event_stream', strength: 0.7 },
+      ],
     },
     {
       id: 'client',
       name: 'The Client Cortex',
-      role: 'Semantic Factory Memory',
+      role: 'Semantic Factory Memory (Customer Knowledge Layer)',
       status: 'stable',
-      color: '#22c55e',
+      color: '#4ade80',   // green — matches design-system dark theme
       position: [3.5, -1, 0],
       modules: [
-        'Identity', 'Calibration', 'Knowledge Domains',
-        'Quality Gates', 'SOPs', 'ERP Mappings',
-        'CAD References', 'Runtime Context'
+        // Identity & Process
+        'Client Profile', 'Factory Identity', 'Shifts & Schedules', 'Process Parameters',
+        // Quality
+        'Quality Gates', 'Acceptance Criteria', 'Rejection Criteria',
+        // Topology & Product
+        'CAD Models (STEP/IGES)', 'Critical Regions', 'Part Topology', 'Product Types', 'Part Definitions',
+        // Operator
+        'Workforce Metadata', 'Shift Assignments',
+        // ERP & SOPs
+        'Field Mappings', 'Column Schema', 'Operator SOPs', 'Escalation SOPs', 'Recovery SOPs',
+        // Knowledge & References
+        'Defect Knowledge Base', 'Cause Mappings', 'Remediation', 'Visual References', 'PPAP Packages',
+        // Retrieval
+        'Knowledge Indexes', 'Metadata Indexes', 'Processing State', 'Active Context',
       ],
-      connections: []
+      connections: [],
     },
     {
       id: 'scada',
       name: 'The SCADA Cortex',
       role: 'Industrial Automation',
       status: 'planned',
-      color: '#f59e0b',
+      color: '#22d3ee',   // cyan — matches design-system dark theme
       position: [-2, -4, -2],
       modules: ['PLC Integration', 'Sensor Fusion', 'Automation Control'],
-      connections: []
+      connections: [
+        { target: 'piras', type: 'automation', strength: 0.7 },
+      ],
     },
     {
       id: 'business',
       name: 'The Business Cortex',
       role: 'Enterprise Intelligence',
       status: 'planned',
-      color: '#f59e0b',
+      color: '#a78bfa',   // purple — matches design-system dark theme
       position: [2, -4, -2],
       modules: ['ERP Analytics', 'MES Integration', 'Business Intelligence'],
-      connections: []
+      connections: [
+        { target: 'vajra', type: 'retrieval', strength: 0.6 },
+      ],
     },
   ],
 }))

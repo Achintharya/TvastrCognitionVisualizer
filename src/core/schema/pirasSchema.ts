@@ -60,7 +60,7 @@ export const PIRAS_PIPELINE_STAGES: PipelineStage[] = [
   {
     id: 'stage-2c',
     name: 'Signal Classification',
-    description: 'PRIMARY classifier (45% weight) — hard threshold rules on signals',
+    description: 'PRIMARY classifier (40% weight) — hard threshold rules on signals',
     color: '#22c55e',
     latencyMs: [5, 15],
     healthStatus: 'OK',

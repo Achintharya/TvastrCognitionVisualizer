@@ -66,9 +66,7 @@ export function PirasRuntimeScene() {
         <bufferGeometry>
           <bufferAttribute
             attach="attributes-position"
-            count={particleCount}
-            array={particlePositions}
-            itemSize={3}
+            args={[particlePositions, 3]}
           />
         </bufferGeometry>
         <pointsMaterial
@@ -144,7 +142,7 @@ function StageLine({ start, end, color }: { start: [number, number, number]; end
   }, [start, end])
 
   return (
-    <line geometry={geometry}>
+    <line geometry={geometry} {...({} as any)}>
       <lineBasicMaterial color={color} transparent opacity={0.3} />
     </line>
   )

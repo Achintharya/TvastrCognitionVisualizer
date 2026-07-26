@@ -253,7 +253,7 @@ export const CORTEXES: Cortex[] = [
         id: 'pipeline',
         name: 'Pipeline',
         modules: [
-          { id: 'stage-0-8', name: '8-Stage Pipeline', description: 'Stage 0-8 flow' },
+          { id: 'stage-0-10', name: '11-Stage Pipeline', description: 'Stage 0–10 flow (with 2b, 2c sub-stages = 13 nodes)' },
           { id: 'fast-path', name: 'Fast Path', description: '90% fast (<100ms)' },
           { id: 'slow-path', name: 'Slow Path', description: '10% slow (<250ms)' },
         ],

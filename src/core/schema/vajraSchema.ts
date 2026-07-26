@@ -61,7 +61,7 @@ export const VAJRA_COGNITION_FLOW: CognitionStage[] = [
   {
     id: 'llm-synthesize',
     name: 'LLM Synthesis',
-    description: 'Generate evidence-grounded response (Mistral API / Ollama local)',
+    description: 'Generate evidence-grounded response (Groq / OpenAI cloud, or Ollama local)',
     color: '#f59e0b',
     type: 'process'
   },

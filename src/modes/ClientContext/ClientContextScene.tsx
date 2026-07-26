@@ -3,19 +3,22 @@ import { useFrame } from '@react-three/fiber'
 import { Text, Sphere, Ring, Billboard } from '@react-three/drei'
 import * as THREE from 'three'
 
+// Matches the 14 domains defined in appStore.ts / cortexStore.ts
 const CLIENT_DOMAINS = [
-  { id: 'identity', name: 'Identity', description: 'Client profile, deployment type', color: '#00ffff', icon: '◎' },
-  { id: 'calibration', name: 'Calibration', description: 'Parameters, models, thresholds', color: '#8b5cf6', icon: '◉' },
-  { id: 'knowledge', name: 'Knowledge Domains', description: 'Defect taxonomy, process knowledge', color: '#ec4899', icon: '◈' },
-  { id: 'quality_gates', name: 'Quality Gates', description: 'Gate definitions, compliance rules', color: '#ef4444', icon: '◆' },
-  { id: 'sop', name: 'SOPs', description: 'Standard operating procedures', color: '#f59e0b', icon: '◇' },
-  { id: 'erp', name: 'ERP Mappings', description: 'Field mappings, production context', color: '#22c55e', icon: '◫' },
-  { id: 'cad', name: 'CAD References', description: 'Part geometry, tolerance zones', color: '#3b82f6', icon: '◧' },
-  { id: 'runtime', name: 'Runtime Context', description: 'Active state, session config', color: '#06b6d4', icon: '◩' },
-  { id: 'visual_refs', name: 'Visual References', description: 'Reference images, exemplars', color: '#a78bfa', icon: '◪' },
-  { id: 'ppap', name: 'PPAP', description: 'Production part approval', color: '#f97316', icon: '◬' },
-  { id: 'simulation', name: 'Simulation', description: 'Process simulation data', color: '#84cc16', icon: '◭' },
-  { id: 'overlays', name: 'Overlays', description: 'Defect/threshold overlays', color: '#14b8a6', icon: '◮' },
+  { id: 'identity',         name: 'Identity',         description: 'Client profile, factory ID, deployment type', color: '#4ade80', icon: '◎' },
+  { id: 'process',          name: 'Process',           description: 'Shifts, schedules, process parameters',        color: '#22d3ee', icon: '◉' },
+  { id: 'quality',          name: 'Quality',           description: 'Quality gates, acceptance/rejection criteria',  color: '#f59e0b', icon: '◈' },
+  { id: 'topology',         name: 'Topology',          description: 'CAD models, critical regions, part topology',   color: '#3b82f6', icon: '◆' },
+  { id: 'product',          name: 'Product',           description: 'Product types, part definitions',               color: '#8b5cf6', icon: '◇' },
+  { id: 'operator',         name: 'Operator',          description: 'Workforce metadata, shift assignments',          color: '#ec4899', icon: '◫' },
+  { id: 'erp',              name: 'ERP',               description: 'Field mappings, column schema',                  color: '#f97316', icon: '◧' },
+  { id: 'sop',              name: 'SOPs',              description: 'Operator, escalation, recovery procedures',      color: '#a78bfa', icon: '◩' },
+  { id: 'visual-references',name: 'Visual Refs',       description: 'Reference parts, defect examples, annotations',  color: '#06b6d4', icon: '◪' },
+  { id: 'knowledge-domains',name: 'Knowledge',         description: 'Defect KB, cause mappings, remediation',         color: '#ef4444', icon: '◬' },
+  { id: 'ppap',             name: 'PPAP',              description: 'Part approval packages, approval records',        color: '#84cc16', icon: '◭' },
+  { id: 'sources',          name: 'Sources',           description: 'Raw PDFs, DOCX, XLSX, CAD source files',         color: '#14b8a6', icon: '◮' },
+  { id: 'retrieval',        name: 'Retrieval',         description: 'Knowledge indexes, metadata indexes, state',      color: '#6366f1', icon: '◰' },
+  { id: 'runtime',          name: 'Runtime Context',   description: 'Active context (cognition-writable)',             color: '#fb7185', icon: '◱' },
 ]
 
 export function ClientContextScene() {
@@ -30,15 +33,15 @@ export function ClientContextScene() {
     }
   })
 
-  // Hexagonal positions for domains
+  // Two-ring layout: inner 7, outer 7
   const domainPositions = useMemo(() => {
     return CLIENT_DOMAINS.map((_, i) => {
       const angle = (i / CLIENT_DOMAINS.length) * Math.PI * 2 - Math.PI / 2
-      const ring = i < 6 ? 3.2 : 5.2
+      const ring = i < 7 ? 3.2 : 5.4
       return [
         Math.cos(angle) * ring,
-        Math.sin(angle) * ring * 0.6,
-        Math.sin(angle + i) * 0.5,
+        Math.sin(angle) * ring * 0.55,
+        Math.sin(angle + i) * 0.4,
       ] as [number, number, number]
     })
   }, [])
@@ -49,8 +52,8 @@ export function ClientContextScene() {
       <group>
         <Sphere ref={centralRef} args={[0.6, 32, 32]}>
           <meshStandardMaterial
-            color="#22c55e"
-            emissive="#22c55e"
+            color="#4ade80"
+            emissive="#4ade80"
             emissiveIntensity={0.8}
             transparent
             opacity={0.8}
@@ -59,19 +62,19 @@ export function ClientContextScene() {
           />
         </Sphere>
         <Ring args={[1.0, 1.05, 64]} rotation={[Math.PI / 2, 0, 0]}>
-          <meshBasicMaterial color="#22c55e" transparent opacity={0.3} side={THREE.DoubleSide} />
+          <meshBasicMaterial color="#4ade80" transparent opacity={0.3} side={THREE.DoubleSide} />
         </Ring>
         <Ring args={[1.3, 1.33, 64]} rotation={[Math.PI / 3, 0.5, 0]}>
-          <meshBasicMaterial color="#22c55e" transparent opacity={0.15} side={THREE.DoubleSide} />
+          <meshBasicMaterial color="#4ade80" transparent opacity={0.15} side={THREE.DoubleSide} />
         </Ring>
         <Billboard position={[0, -1.2, 0]}>
-          <Text fontSize={0.2} color="#22c55e" anchorX="center">
-            Client
+          <Text fontSize={0.2} color="#4ade80" anchorX="center">
+            Client Cortex
           </Text>
         </Billboard>
         <Billboard position={[0, -1.5, 0]}>
-          <Text fontSize={0.12} color="rgba(255,255,255,0.4)" anchorX="center">
-            Semantic Factory Memory
+          <Text fontSize={0.11} color="rgba(255,255,255,0.4)" anchorX="center">
+            Semantic Factory Memory · {CLIENT_DOMAINS.length} Domains
           </Text>
         </Billboard>
       </group>
@@ -148,7 +151,7 @@ function ConnectionLine({ start, end, color }: { start: [number, number, number]
   }, [start, end])
 
   return (
-    <line geometry={geometry}>
+    <line geometry={geometry} {...({} as any)}>
       <lineBasicMaterial color={color} transparent opacity={0.15} />
     </line>
   )

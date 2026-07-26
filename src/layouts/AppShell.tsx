@@ -1,4 +1,4 @@
-import { ReactNode, useEffect } from 'react'
+import { type ReactNode, useEffect } from 'react'
 import { useAppStore } from '../stores/appStore'
 import type { World } from '../stores/appStore'
 import { WorldNav } from './WorldNav'

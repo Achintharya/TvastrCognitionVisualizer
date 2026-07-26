@@ -56,7 +56,7 @@ export function NeuralPathway({ start, end, color, strength }: Props) {
   return (
     <group>
       {/* Path line */}
-      <line ref={lineRef as any} geometry={lineGeometry}>
+      <line ref={lineRef as any} geometry={lineGeometry} {...({} as any)}>
         <lineBasicMaterial color={color} transparent opacity={0.2 * strength} />
       </line>
 
@@ -65,9 +65,7 @@ export function NeuralPathway({ start, end, color, strength }: Props) {
         <bufferGeometry>
           <bufferAttribute
             attach="attributes-position"
-            count={particleCount}
-            array={particlePositions}
-            itemSize={3}
+            args={[particlePositions, 3]}
           />
         </bufferGeometry>
         <pointsMaterial
