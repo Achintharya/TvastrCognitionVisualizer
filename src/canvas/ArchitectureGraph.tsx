@@ -457,12 +457,14 @@ function CortexNode({
         className={status === 'running' ? 'node-pulse' : undefined}
       />
 
-      {/* Cortex name */}
+      {/* Cortex name — rendered outside the fill with high contrast */}
       <text
-        x={0} y={4} textAnchor="middle"
-        fontSize={pos.r > 40 ? 13 : 11}
-        fontWeight="600"
-        fill={cortex.color}
+        x={0} y={pos.r * 0.25}
+        textAnchor="middle"
+        fontSize={pos.r > 40 ? 14 : 12}
+        fontWeight="700"
+        fill="#ffffff"
+        style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.9))' }}
         letterSpacing="0.5"
       >
         {cortex.name}
@@ -470,20 +472,21 @@ function CortexNode({
 
       {/* Role label below node */}
       <text
-        x={0} y={pos.r + 16}
+        x={0} y={pos.r + 18}
         textAnchor="middle"
-        fontSize={9}
-        fill="var(--text-tertiary)"
+        fontSize={10}
+        fill="var(--text-secondary)"
+        fontWeight="500"
       >
-        {cortex.role.length > 28 ? cortex.role.slice(0, 28) + '…' : cortex.role}
+        {cortex.role.length > 30 ? cortex.role.slice(0, 30) + '…' : cortex.role}
       </text>
 
       {/* Domain / module count badges */}
       <text
-        x={0} y={pos.r + 27}
+        x={0} y={pos.r + 31}
         textAnchor="middle"
-        fontSize={8}
-        fill="var(--text-muted)"
+        fontSize={9}
+        fill="var(--text-tertiary)"
       >
         {domainCount}d · {moduleCount}m
       </text>
@@ -584,15 +587,15 @@ function LayoutToolbar() {
   ]
 
   return (
-    <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1 px-2 py-1.5 rounded-lg surface-elevated">
+    <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1.5 px-3 py-2 rounded-xl surface-elevated shadow-md">
       {modes.map(m => (
         <button
           key={m.id}
           onClick={() => setLayoutMode(m.id)}
           title={`${m.label} (${m.key})`}
-          className={`px-3 py-1 rounded text-xs font-medium transition-all duration-150 ${
+          className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 ${
             layoutMode === m.id
-              ? 'bg-[var(--brand-accent)] text-[var(--brand-accent-fg)]'
+              ? 'bg-[var(--brand-accent)] text-[var(--brand-accent-fg)] shadow-sm'
               : 'text-secondary hover:text-primary hover:bg-[var(--bg-hover)]'
           }`}
         >

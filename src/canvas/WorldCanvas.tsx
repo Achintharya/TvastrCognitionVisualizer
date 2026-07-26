@@ -163,8 +163,9 @@ function UnderstandCanvas() {
   const energy = DEFAULT_ENERGY_STATE
 
   return (
-    <div className="h-full w-full overflow-y-auto p-6">
-      <div className="max-w-2xl mx-auto">
+    <div className="h-full w-full overflow-y-auto">
+      <div className="min-h-full flex flex-col items-center justify-start py-8 px-6">
+      <div className="w-full max-w-2xl">
         <div className="mb-6">
           <div className="heading-sm mb-1">Energy Reasoning — Phase-K</div>
           <div className="caption">Physics-inspired defect classification via energy convergence</div>
@@ -249,6 +250,7 @@ function UnderstandCanvas() {
           </div>
         </div>
       </div>
+      </div>
 
       <WorldLabel world="understand" />
     </div>
@@ -280,8 +282,9 @@ function EvolveCanvas() {
   }
 
   return (
-    <div className="h-full w-full overflow-y-auto p-6">
-      <div className="max-w-xl mx-auto">
+    <div className="h-full w-full overflow-y-auto">
+      <div className="min-h-full flex flex-col items-center justify-start py-8 px-6">
+      <div className="w-full max-w-xl">
         <div className="mb-6">
           <div className="heading-sm mb-1">System Evolution Roadmap</div>
           <div className="caption">The path toward unified industrial cognition</div>
@@ -332,6 +335,7 @@ function EvolveCanvas() {
             )
           })}
         </div>
+      </div>
       </div>
 
       <WorldLabel world="evolve" />
