@@ -157,11 +157,6 @@ export function NavTree() {
       {/* Search bar */}
       <div className="px-4 pt-5 pb-4 flex-shrink-0">
         <div className="relative">
-          <svg className="absolute left-4 top-1/2 -translate-y-1/2 text-tertiary pointer-events-none"
-            width="16" height="16" viewBox="0 0 12 12" fill="none">
-            <circle cx="5" cy="5" r="3.5" stroke="currentColor" strokeWidth="1.4"/>
-            <path d="M8 8l2.5 2.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
-          </svg>
           <input
             ref={searchRef}
             value={searchQuery}

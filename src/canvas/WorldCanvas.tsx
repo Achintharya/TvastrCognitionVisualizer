@@ -168,7 +168,7 @@ function UnderstandCanvas() {
       <div className="w-full max-w-2xl">
         <div className="mb-8">
           <div className="text-xs font-semibold tracking-widest uppercase text-tertiary mb-2">Understand</div>
-          <div className="text-2xl font-semibold mb-1">Energy Reasoning — Phase-K</div>
+          <div className="text-2xl font-semibold mb-1 text-primary">Energy Reasoning — Phase-K</div>
           <div className="text-sm text-secondary">Physics-inspired defect classification via energy convergence</div>
         </div>
 
