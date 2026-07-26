@@ -102,26 +102,26 @@ export function AppShell({ children }: AppShellProps) {
 
       {/* Main Content Area */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Left Navigation */}
+        {/* Left Navigation — 30% */}
         {!navCollapsed && (
-          <aside 
-            className="surface border-r border-r-[var(--border-subtle)] flex-shrink-0 animate-slide-in-left"
-            style={{ width: 'var(--nav-width)' }}
+          <aside
+            className="surface border-r border-r-[var(--border-subtle)] flex-shrink-0 animate-slide-in-left overflow-hidden"
+            style={{ width: '30%', minWidth: 240, maxWidth: 480 }}
           >
             <NavTree />
           </aside>
         )}
 
-        {/* Main Canvas */}
+        {/* Main Canvas — 40% (flex-1 between panels) */}
         <main className="flex-1 overflow-hidden relative">
           {children}
         </main>
 
-        {/* Right Inspector */}
+        {/* Right Inspector — 30% */}
         {inspectorOpen && (
-          <aside 
-            className="surface border-l border-l-[var(--border-subtle)] flex-shrink-0 animate-slide-in-right"
-            style={{ width: 'var(--inspector-width)' }}
+          <aside
+            className="surface border-l border-l-[var(--border-subtle)] flex-shrink-0 animate-slide-in-right overflow-hidden"
+            style={{ width: '30%', minWidth: 240, maxWidth: 480 }}
           >
             <Inspector />
           </aside>

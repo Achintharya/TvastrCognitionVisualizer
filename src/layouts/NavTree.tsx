@@ -155,10 +155,10 @@ export function NavTree() {
   return (
     <div className="h-full flex flex-col overflow-hidden">
       {/* Search bar */}
-      <div className="px-2 pt-3 pb-2 flex-shrink-0">
+      <div className="px-3 pt-4 pb-2 flex-shrink-0">
         <div className="relative">
-          <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 text-tertiary pointer-events-none"
-            width="12" height="12" viewBox="0 0 12 12" fill="none">
+          <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-tertiary pointer-events-none"
+            width="15" height="15" viewBox="0 0 12 12" fill="none">
             <circle cx="5" cy="5" r="3.5" stroke="currentColor" strokeWidth="1.3"/>
             <path d="M8 8l2.5 2.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
           </svg>
@@ -168,15 +168,16 @@ export function NavTree() {
             onChange={e => setSearchQuery(e.target.value)}
             onKeyDown={e => { if (e.key === 'Escape') { setSearchQuery(''); searchRef.current?.blur() } }}
             placeholder="Search architecture…"
-            className="w-full pl-7 pr-2 py-1.5 text-xs rounded bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-primary placeholder:text-tertiary outline-none focus:border-[var(--brand-accent)] transition-colors"
+            className="w-full pl-9 pr-8 py-2.5 text-sm rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-default)] text-primary placeholder:text-tertiary outline-none focus:border-[var(--brand-accent)] transition-colors"
+            style={{ fontSize: 14 }}
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-tertiary hover:text-primary"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-tertiary hover:text-primary"
             >
-              <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                <path d="M2 2l6 6M8 2l-6 6" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+              <svg width="13" height="13" viewBox="0 0 10 10" fill="none">
+                <path d="M2 2l6 6M8 2l-6 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
               </svg>
             </button>
           )}
@@ -185,14 +186,14 @@ export function NavTree() {
 
       {/* Collapse/Expand toolbar */}
       <div className="flex items-center justify-between px-3 pb-2 flex-shrink-0">
-        <span className="text-[10px] text-tertiary">{totalModules} modules</span>
+        <span className="text-xs text-tertiary">{totalModules} modules</span>
         <div className="flex gap-1">
           <button onClick={collapseAll} title="Collapse all"
-            className="px-1.5 py-0.5 text-[10px] text-tertiary hover:text-primary hover:bg-[var(--bg-hover)] rounded transition-colors">
+            className="px-2 py-1 text-xs text-tertiary hover:text-primary hover:bg-[var(--bg-hover)] rounded transition-colors">
             ⊟
           </button>
           <button onClick={expandAll} title="Expand all"
-            className="px-1.5 py-0.5 text-[10px] text-tertiary hover:text-primary hover:bg-[var(--bg-hover)] rounded transition-colors">
+            className="px-2 py-1 text-xs text-tertiary hover:text-primary hover:bg-[var(--bg-hover)] rounded transition-colors">
             ⊞
           </button>
         </div>
