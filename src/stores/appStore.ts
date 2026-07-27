@@ -29,7 +29,7 @@ export const WORLD_META: Record<World, { question: string; description: string }
    CORTEX TYPES
    ============================================ */
 
-export type CortexId = 'vajra' | 'piras' | 'client' | 'scada' | 'business'
+export type CortexId = 'vajra' | 'piras' | 'client' | 'scada' | 'business' | 'mis'
 
 export interface Cortex {
   id: CortexId
@@ -487,6 +487,112 @@ export const CORTEXES: Cortex[] = [
       { target: 'vajra', type: 'retrieval', label: 'Queries', strength: 0.6 },
     ],
   },
+  {
+    id: 'mis',
+    name: 'MIS',
+    fullName: 'The MIS Cortex',
+    role: 'Executive Management Information System',
+    status: 'active',
+    color: '#EC4899',
+    colorSubtle: 'rgba(236, 72, 153, 0.15)',
+    domains: [
+      {
+        id: 'dashboards',
+        name: 'Dashboards',
+        modules: [
+          { id: 'plant-dashboards', name: 'Plant Dashboards', description: 'Per-plant executive KPI dashboards' },
+          { id: 'dept-dashboards', name: 'Department Dashboards', description: 'Production, Quality, Maintenance, Sales, Finance' },
+          { id: 'kpi-cards', name: 'KPI Cards', description: 'Real-time metric display with trends and status' },
+        ],
+      },
+      {
+        id: 'plants',
+        name: 'Plants',
+        modules: [
+          { id: 'castco', name: 'Castco', description: 'Casting operations plant' },
+          { id: 'cpl', name: 'CPL', description: 'Central processing plant' },
+          { id: 'alloy-steels', name: 'Alloy Steels', description: 'Specialty alloys plant' },
+          { id: 'veecast', name: 'VeeCast', description: 'Advanced casting plant' },
+          { id: 'sipl', name: 'SIPL', description: 'Steel integrated plant' },
+        ],
+      },
+      {
+        id: 'departments',
+        name: 'Departments',
+        modules: [
+          { id: 'production', name: 'Production', description: 'Output, OEE, utilization, efficiency' },
+          { id: 'quality', name: 'Quality', description: 'Defect rates, yield, customer complaints' },
+          { id: 'maintenance', name: 'Maintenance', description: 'Uptime, MTBF, costs, work orders' },
+          { id: 'sales', name: 'Sales', description: 'Revenue, fulfillment, satisfaction' },
+          { id: 'finance', name: 'Finance', description: 'Revenue, margins, costs, receivables' },
+        ],
+      },
+      {
+        id: 'reporting',
+        name: 'Reporting',
+        modules: [
+          { id: 'pdf-generation', name: 'PDF Generation', description: 'HTML → PDF via WeasyPrint + Jinja2 templates' },
+          { id: 'scheduler', name: 'Daily Scheduler', description: 'APScheduler cron at 08:00 — previous day data' },
+          { id: 'email-delivery', name: 'Email Delivery', description: 'SMTP delivery to executive recipients' },
+          { id: 'enterprise-report', name: 'Enterprise Report', description: 'All-plants consolidated executive report' },
+          { id: 'plant-reports', name: 'Plant Reports', description: 'Per-plant PDF reports (5 plants)' },
+          { id: 'manual-trigger', name: 'Manual Trigger', description: 'POST /api/reports/generate endpoint' },
+        ],
+      },
+      {
+        id: 'data',
+        name: 'Data',
+        modules: [
+          { id: 'sql-server', name: 'SQL Server', description: 'Primary production data source (read-only)' },
+          { id: 'demo-mode', name: 'DEMO Mode', description: 'Mock data engine for development/testing' },
+          { id: 'report-period', name: 'Report Period', description: 'Date range helper (yesterday, last_week, custom)' },
+        ],
+      },
+      {
+        id: 'authentication',
+        name: 'Authentication',
+        modules: [
+          { id: 'jwt-auth', name: 'JWT Authentication', description: 'Token-based auth, 480-minute expiry' },
+          { id: 'sqlite-users', name: 'SQLite User DB', description: 'Local user management database' },
+          { id: 'user-management', name: 'User Management CLI', description: 'Add/list/activate/deactivate/change-password' },
+        ],
+      },
+      {
+        id: 'api',
+        name: 'API',
+        modules: [
+          { id: 'fastapi-backend', name: 'FastAPI Backend', description: 'Python FastAPI, port 9000' },
+          { id: 'plant-routes', name: 'Plant Routes', description: 'GET /api/plants, GET /api/plants/{id}' },
+          { id: 'dashboard-routes', name: 'Dashboard Routes', description: 'GET /api/dashboards/{plant}/{dept}' },
+          { id: 'report-routes', name: 'Report Routes', description: 'POST /api/reports/generate' },
+        ],
+      },
+      {
+        id: 'frontend',
+        name: 'Frontend',
+        modules: [
+          { id: 'nextjs', name: 'Next.js 14', description: 'App Router, TypeScript, port 3001' },
+          { id: 'zustand-state', name: 'Zustand State', description: 'Auth, plant selection, sidebar state' },
+          { id: 'recharts', name: 'Recharts', description: 'KPI trend visualizations' },
+          { id: 'plant-selection', name: 'Plant Selection', description: 'Multi-plant card-based navigation' },
+        ],
+      },
+      {
+        id: 'medhas-integration',
+        name: 'Medhas Integration',
+        modules: [
+          { id: 'ai-summaries', name: 'AI Summaries', description: 'Medhas Executive API — AI-generated insights (planned)' },
+          { id: 'risk-alerts', name: 'Risk Alerts', description: 'Predictive warnings for critical events (planned)' },
+          { id: 'anomaly-detection', name: 'Anomaly Detection', description: 'Unusual pattern detection (planned)' },
+          { id: 'recommendations', name: 'Recommendations', description: 'Actionable executive suggestions (planned)' },
+        ],
+      },
+    ],
+    connections: [
+      { target: 'vajra', type: 'retrieval', label: 'Queries Vajra for AI executive insights', strength: 0.7 },
+      { target: 'piras', type: 'retrieval', label: 'Reads quality & inspection metrics', strength: 0.6 },
+    ],
+  },
 ]
 
 /* ============================================
@@ -625,6 +731,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     client: 'running',
     scada: 'planned',
     business: 'planned',
+    mis: 'running',
   },
   setRuntimeStatus: (id, status) =>
     set((s) => ({ runtimeStatus: { ...s.runtimeStatus, [id]: status } })),

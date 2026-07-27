@@ -19,46 +19,48 @@ function computeLayout(mode: LayoutMode): Record<CortexId, { x: number; y: numbe
   switch (mode) {
     case 'architecture':
       return {
-        vajra:    { x: 450, y: 140, r: 52 },
-        piras:    { x: 230, y: 340, r: 44 },
-        client:   { x: 670, y: 340, r: 44 },
-        scada:    { x: 160, y: 510, r: 34 },
-        business: { x: 740, y: 510, r: 34 },
+        vajra:    { x: 450, y: 130, r: 52 },
+        piras:    { x: 200, y: 320, r: 44 },
+        client:   { x: 700, y: 320, r: 44 },
+        mis:      { x: 450, y: 340, r: 40 },
+        scada:    { x: 130, y: 500, r: 32 },
+        business: { x: 770, y: 500, r: 32 },
       }
     case 'dependencies':
       return {
-        vajra:    { x: 450, y: 120, r: 52 },
-        piras:    { x: 220, y: 320, r: 44 },
-        client:   { x: 680, y: 320, r: 44 },
-        scada:    { x: 150, y: 500, r: 34 },
-        business: { x: 750, y: 500, r: 34 },
+        vajra:    { x: 450, y: 100, r: 52 },
+        piras:    { x: 200, y: 300, r: 44 },
+        client:   { x: 700, y: 300, r: 44 },
+        mis:      { x: 450, y: 310, r: 40 },
+        scada:    { x: 130, y: 490, r: 32 },
+        business: { x: 770, y: 490, r: 32 },
       }
     case 'dataflow':
-      // Horizontal left-to-right pipeline flow
       return {
-        scada:    { x: 110, y: 300, r: 32 },
-        piras:    { x: 280, y: 300, r: 44 },
-        client:   { x: 450, y: 180, r: 40 },
-        vajra:    { x: 620, y: 300, r: 52 },
-        business: { x: 800, y: 300, r: 32 },
+        scada:    { x: 90,  y: 300, r: 30 },
+        piras:    { x: 250, y: 300, r: 44 },
+        client:   { x: 420, y: 180, r: 38 },
+        vajra:    { x: 580, y: 300, r: 52 },
+        mis:      { x: 760, y: 300, r: 40 },
+        business: { x: 870, y: 420, r: 28 },
       }
     case 'runtime':
-      // Concentric — active cortexes inner ring
       return {
-        vajra:    { x: 450, y: 290, r: 52 },
-        piras:    { x: 230, y: 200, r: 44 },
-        client:   { x: 670, y: 200, r: 44 },
-        scada:    { x: 230, y: 400, r: 34 },
-        business: { x: 670, y: 400, r: 34 },
+        vajra:    { x: 450, y: 270, r: 52 },
+        piras:    { x: 220, y: 180, r: 44 },
+        client:   { x: 680, y: 180, r: 44 },
+        mis:      { x: 450, y: 150, r: 40 },
+        scada:    { x: 200, y: 400, r: 32 },
+        business: { x: 700, y: 400, r: 32 },
       }
     case 'package':
-      // Tvastr at center, cortexes radially
       return {
-        vajra:    { x: 450, y: 140, r: 52 },
-        piras:    { x: 180, y: 320, r: 44 },
-        client:   { x: 720, y: 320, r: 44 },
-        scada:    { x: 230, y: 510, r: 32 },
-        business: { x: 670, y: 510, r: 32 },
+        vajra:    { x: 450, y: 130, r: 52 },
+        piras:    { x: 170, y: 310, r: 44 },
+        client:   { x: 730, y: 310, r: 44 },
+        mis:      { x: 450, y: 330, r: 40 },
+        scada:    { x: 200, y: 500, r: 30 },
+        business: { x: 700, y: 500, r: 30 },
       }
     default:
       return computeLayout('architecture')

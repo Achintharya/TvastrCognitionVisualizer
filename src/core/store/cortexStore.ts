@@ -7,7 +7,7 @@ export type VisualizationMode =
   | 'client-context'
   | 'process-intelligence'
 
-export type CortexId = 'vajra' | 'piras' | 'client' | 'scada' | 'business'
+export type CortexId = 'vajra' | 'piras' | 'client' | 'scada' | 'business' | 'mis'
 
 export interface CortexNode {
   id: CortexId
@@ -171,6 +171,34 @@ export const useCortexStore = create<CortexState>((set) => ({
       modules: ['ERP Analytics', 'MES Integration', 'Business Intelligence'],
       connections: [
         { target: 'vajra', type: 'retrieval', strength: 0.6 },
+      ],
+    },
+    {
+      id: 'mis',
+      name: 'The MIS Cortex',
+      role: 'Executive Management Information System',
+      status: 'active',
+      color: '#f472b6',   // rose/pink
+      position: [0, -4, 2],
+      modules: [
+        // Dashboards
+        'Plant Dashboards', 'Department Dashboards', 'KPI Cards',
+        // Plants
+        'Castco', 'CPL', 'Alloy Steels', 'VeeCast', 'SIPL',
+        // Departments
+        'Production', 'Quality', 'Maintenance', 'Sales', 'Finance',
+        // Reporting
+        'PDF Generation (WeasyPrint)', 'Daily Scheduler (08:00)', 'Email Delivery (SMTP)', 'Enterprise Report', 'Plant Reports',
+        // Data & Auth
+        'SQL Server', 'DEMO Mode', 'JWT Authentication', 'SQLite User DB',
+        // API & Frontend
+        'FastAPI Backend (9000)', 'Plant Routes', 'Dashboard Routes', 'Next.js 14 (3001)', 'Zustand State', 'Recharts',
+        // Future
+        'Medhas AI Summaries', 'Risk Alerts', 'Anomaly Detection',
+      ],
+      connections: [
+        { target: 'vajra', type: 'retrieval', strength: 0.7 },
+        { target: 'piras', type: 'retrieval', strength: 0.6 },
       ],
     },
   ],

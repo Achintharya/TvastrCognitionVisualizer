@@ -50,6 +50,8 @@
   --cortex-scada-subtle: rgba(8, 145, 178, 0.1);
   --cortex-business: #7c3aed;
   --cortex-business-subtle: rgba(124, 58, 237, 0.1);
+  --cortex-mis: #db2777;
+  --cortex-mis-subtle: rgba(219, 39, 119, 0.1);
 
   /* ─── Status Colors ───────────────────────────────────────────────────────── */
   --status-success: #16a34a;
@@ -137,6 +139,8 @@
   --cortex-scada-subtle: rgba(34, 211, 238, 0.12);
   --cortex-business: #a78bfa;
   --cortex-business-subtle: rgba(167, 139, 250, 0.12);
+  --cortex-mis: #f472b6;
+  --cortex-mis-subtle: rgba(244, 114, 182, 0.12);
 
   /* ─── Status Colors (brighter for dark bg) ────────────────────────────────── */
   --status-success: #4ade80;
