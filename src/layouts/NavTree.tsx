@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
+import type { ReactElement } from 'react'
 import { useAppStore, CORTEXES } from '../stores/appStore'
 import type { CortexId } from '../stores/appStore'
 
@@ -52,7 +53,7 @@ function ModuleTypeIcon({ type, color = 'currentColor' }: { type: ModuleType; co
   const cls = `opacity-60 shrink-0`
   const size = 13
 
-  const icons: Record<ModuleType, JSX.Element> = {
+  const icons: Record<ModuleType, ReactElement> = {
     reasoning:     <svg width={size} height={size} viewBox="0 0 14 14" fill="none" className={cls}><path d="M7 1L12 4V10L7 13L2 10V4L7 1Z" stroke={color} strokeWidth="1.2"/></svg>,
     memory:        <svg width={size} height={size} viewBox="0 0 14 14" fill="none" className={cls}><circle cx="7" cy="7" r="5" stroke={color} strokeWidth="1.2"/><path d="M5 7h4M7 5v4" stroke={color} strokeWidth="1.2" strokeLinecap="round"/></svg>,
     database:      <svg width={size} height={size} viewBox="0 0 14 14" fill="none" className={cls}><ellipse cx="7" cy="4" rx="4" ry="2" stroke={color} strokeWidth="1.2"/><path d="M3 4v6c0 1.1 1.8 2 4 2s4-.9 4-2V4" stroke={color} strokeWidth="1.2"/></svg>,
