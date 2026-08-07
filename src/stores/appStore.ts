@@ -664,10 +664,6 @@ interface AppState {
   inspectorOpen: boolean
   setInspectorOpen: (open: boolean) => void
 
-  // Timeline
-  timelineExpanded: boolean
-  setTimelineExpanded: (expanded: boolean) => void
-
   // Runtime Events (for Observe world)
   events: RuntimeEvent[]
   addEvent: (event: RuntimeEvent) => void
@@ -743,10 +739,6 @@ export const useAppStore = create<AppState>((set, get) => ({
   // Inspector
   inspectorOpen: true,
   setInspectorOpen: (open) => set({ inspectorOpen: open }),
-
-  // Timeline
-  timelineExpanded: false,
-  setTimelineExpanded: (expanded) => set({ timelineExpanded: expanded }),
 
   // Runtime Events
   events: [],

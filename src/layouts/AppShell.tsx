@@ -3,7 +3,6 @@ import { useAppStore } from '../stores/appStore'
 import { WorldNav } from './WorldNav'
 import { NavTree } from './NavTree'
 import { Inspector } from './Inspector'
-import { Timeline } from './Timeline'
 
 /* ============================================
    APP SHELL
@@ -16,9 +15,7 @@ import { Timeline } from './Timeline'
    │ NAV  │     MAIN CANVAS         │INSPECTOR│
    │ TREE │     (children)          │         │
    │      │                         │         │
-   ├──────┴─────────────────────────┴─────────┤
-   │  TIMELINE                                │
-   └──────────────────────────────────────────┘
+   └──────┴─────────────────────────┴─────────┘
    ============================================ */
 
 interface AppShellProps {
@@ -127,9 +124,6 @@ export function AppShell({ children }: AppShellProps) {
           </aside>
         )}
       </div>
-
-      {/* Bottom Timeline */}
-      <Timeline />
     </div>
   )
 }
