@@ -1,5 +1,6 @@
 import { useAppStore, WORLD_META } from '../stores/appStore'
 import type { World } from '../stores/appStore'
+import type { ReactElement } from 'react'
 
 /* ============================================
    MOBILE BOTTOM NAVIGATION
@@ -9,7 +10,7 @@ import type { World } from '../stores/appStore'
 const WORLDS: World[] = ['explore', 'observe', 'understand', 'evolve']
 
 // World icons (simple, recognizable shapes)
-const WORLD_ICONS: Record<World, JSX.Element> = {
+const WORLD_ICONS: Record<World, ReactElement> = {
   explore: (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <circle cx="12" cy="12" r="10" />

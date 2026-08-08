@@ -59,7 +59,7 @@ export function AppShell({ children }: AppShellProps) {
 
   // Auto-close mobile drawers when selecting items
   useEffect(() => {
-    if (isMobile && setSelection) {
+    if (isMobile) {
       // Close drawers when navigation occurs
       setMobileNavOpen(false)
       setMobileInspectorOpen(false)
