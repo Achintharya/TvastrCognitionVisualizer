@@ -81,6 +81,14 @@
   --nav-width: 280px;
   --inspector-width: 380px;
   --header-height: 48px;
+  --mobile-bottom-nav-height: 64px;
+
+  /* ─── Responsive Breakpoints ──────────────────────────────────────────────── */
+  --breakpoint-mobile: 768px;
+  --breakpoint-tablet: 1024px;
+
+  /* ─── Touch Targets (Mobile) ──────────────────────────────────────────────── */
+  --touch-target-min: 44px;
 
   /* ─── Transitions ─────────────────────────────────────────────────────────── */
   --transition-fast: 150ms ease;
@@ -633,4 +641,238 @@ body {
 
 .animate-slide-in-up {
   animation: slideInUp var(--transition-normal) ease;
+}
+
+/* ============================================
+   MOBILE RESPONSIVE STYLES
+   ============================================ */
+
+/* Mobile Drawer Overlay/Backdrop */
+.mobile-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 40;
+  animation: fadeIn 200ms ease;
+}
+
+/* Mobile Drawer Base Styles */
+.mobile-drawer {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  width: 85%;
+  max-width: 320px;
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-lg);
+  z-index: 50;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mobile-drawer.left {
+  left: 0;
+  animation: slideInFromLeft 250ms ease;
+}
+
+.mobile-drawer.right {
+  right: 0;
+  animation: slideInFromRight 250ms ease;
+}
+
+@keyframes slideInFromLeft {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInFromRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* Mobile Drawer Header */
+.mobile-drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-lg);
+  border-bottom: 1px solid var(--border-subtle);
+  position: sticky;
+  top: 0;
+  background: var(--bg-surface);
+  z-index: 1;
+}
+
+/* Mobile Bottom Navigation */
+.mobile-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: var(--mobile-bottom-nav-height);
+  background: var(--bg-surface);
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 30;
+  padding-bottom: env(safe-area-inset-bottom, 0);
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.mobile-bottom-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  height: 100%;
+  color: var(--text-tertiary);
+  font-size: 10px;
+  font-weight: 500;
+  gap: 4px;
+  transition: color var(--transition-fast);
+  cursor: pointer;
+  user-select: none;
+  text-transform: capitalize;
+}
+
+.mobile-bottom-nav-item:active {
+  background: var(--bg-hover);
+}
+
+.mobile-bottom-nav-item.active {
+  color: var(--brand-accent);
+}
+
+.mobile-bottom-nav-item .icon {
+  width: 24px;
+  height: 24px;
+}
+
+/* Touch Target Improvements */
+@media (max-width: 768px) {
+  button,
+  .nav-item,
+  .interactive {
+    min-height: var(--touch-target-min);
+    min-width: var(--touch-target-min);
+  }
+
+  /* Increase touch padding */
+  .nav-item {
+    padding: 14px var(--space-lg);
+  }
+
+  /* Larger tap targets for icons */
+  button svg {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+/* Hide Desktop Elements on Mobile */
+@media (max-width: 768px) {
+  .hide-mobile {
+    display: none !important;
+  }
+
+  .world-tab {
+    display: none;
+  }
+}
+
+/* Hide Mobile Elements on Desktop */
+@media (min-width: 769px) {
+  .hide-desktop {
+    display: none !important;
+  }
+
+  .mobile-bottom-nav,
+  .mobile-drawer-backdrop {
+    display: none !important;
+  }
+}
+
+/* Tablet Responsive Adjustments */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .nav-item {
+    font-size: 14px;
+  }
+
+  .heading-lg {
+    font-size: 16px;
+  }
+}
+
+/* Mobile Header Adjustments */
+@media (max-width: 768px) {
+  header {
+    padding: var(--space-sm) var(--space-md) !important;
+  }
+
+  header .text-xs {
+    display: none;
+  }
+
+  header .flex.items-center.gap-2 {
+    gap: var(--space-sm);
+  }
+
+  /* Compact logo on mobile */
+  header .w-6.h-6 svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+/* Disable hover effects on touch devices */
+@media (hover: none) {
+  .hover\:bg-white\/5:hover,
+  .hover\:bg-hover:hover,
+  .hover\:bg-\[var\(--bg-elevated\)\]:hover {
+    background: inherit;
+  }
+
+  /* Enable active states instead */
+  button:active,
+  .nav-item:active {
+    background: var(--bg-active);
+  }
+}
+
+/* Safe area insets for notched phones */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .mobile-bottom-nav {
+    padding-bottom: calc(var(--space-sm) + env(safe-area-inset-bottom));
+  }
+
+  body {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Optimize scrolling on mobile */
+@media (max-width: 768px) {
+  .overflow-y-auto,
+  .overflow-auto {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+}
+
+/* Mobile Canvas Adjustments */
+@media (max-width: 768px) {
+  main {
+    /* Account for bottom navigation */
+    padding-bottom: var(--mobile-bottom-nav-height);
+  }
 }

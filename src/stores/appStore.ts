@@ -677,6 +677,15 @@ interface AppState {
   theme: 'light' | 'dark'
   toggleTheme: () => void
 
+  // Mobile / Responsive
+  isMobile: boolean
+  isTablet: boolean
+  mobileNavOpen: boolean
+  mobileInspectorOpen: boolean
+  setMobileNavOpen: (open: boolean) => void
+  setMobileInspectorOpen: (open: boolean) => void
+  updateScreenSize: () => void
+
   // Cortex Data Access
   getCortex: (id: CortexId) => Cortex | undefined
   getActiveCortexes: () => Cortex[]
@@ -760,6 +769,31 @@ export const useAppStore = create<AppState>((set, get) => ({
       document.documentElement.classList.remove('dark')
     }
     set({ theme: newTheme })
+  },
+
+  // Mobile / Responsive
+  isMobile: typeof window !== 'undefined' ? window.innerWidth < 768 : false,
+  isTablet: typeof window !== 'undefined' ? window.innerWidth >= 768 && window.innerWidth < 1024 : false,
+  mobileNavOpen: false,
+  mobileInspectorOpen: false,
+  setMobileNavOpen: (open) => set({ mobileNavOpen: open }),
+  setMobileInspectorOpen: (open) => set({ mobileInspectorOpen: open }),
+  updateScreenSize: () => {
+    if (typeof window === 'undefined') return
+    const width = window.innerWidth
+    const isMobile = width < 768
+    const isTablet = width >= 768 && width < 1024
+    
+    set({ 
+      isMobile, 
+      isTablet,
+      // Auto-collapse panels on mobile
+      navCollapsed: isMobile ? true : get().navCollapsed,
+      inspectorOpen: isMobile ? false : get().inspectorOpen,
+      // Close mobile drawers when switching to desktop
+      mobileNavOpen: isMobile ? get().mobileNavOpen : false,
+      mobileInspectorOpen: isMobile ? get().mobileInspectorOpen : false,
+    })
   },
 
   // Cortex Data Access

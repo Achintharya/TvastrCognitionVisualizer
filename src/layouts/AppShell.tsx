@@ -3,6 +3,7 @@ import { useAppStore } from '../stores/appStore'
 import { WorldNav } from './WorldNav'
 import { NavTree } from './NavTree'
 import { Inspector } from './Inspector'
+import { MobileBottomNav } from './MobileBottomNav'
 
 /* ============================================
    APP SHELL
@@ -34,6 +35,36 @@ export function AppShell({ children }: AppShellProps) {
   const setFocusMode      = useAppStore((s) => s.setFocusMode)
   const minimapVisible    = useAppStore((s) => s.minimapVisible)
   const setMinimapVisible = useAppStore((s) => s.setMinimapVisible)
+
+  // Mobile state
+  const isMobile           = useAppStore((s) => s.isMobile)
+  const isTablet           = useAppStore((s) => s.isTablet)
+  const mobileNavOpen      = useAppStore((s) => s.mobileNavOpen)
+  const mobileInspectorOpen = useAppStore((s) => s.mobileInspectorOpen)
+  const setMobileNavOpen   = useAppStore((s) => s.setMobileNavOpen)
+  const setMobileInspectorOpen = useAppStore((s) => s.setMobileInspectorOpen)
+  const updateScreenSize   = useAppStore((s) => s.updateScreenSize)
+
+  // Window resize listener for responsive behavior
+  useEffect(() => {
+    updateScreenSize()
+    
+    const handleResize = () => {
+      updateScreenSize()
+    }
+    
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [updateScreenSize])
+
+  // Auto-close mobile drawers when selecting items
+  useEffect(() => {
+    if (isMobile && setSelection) {
+      // Close drawers when navigation occurs
+      setMobileNavOpen(false)
+      setMobileInspectorOpen(false)
+    }
+  }, [setSelection, isMobile, setMobileNavOpen, setMobileInspectorOpen])
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -99,31 +130,81 @@ export function AppShell({ children }: AppShellProps) {
 
       {/* Main Content Area */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Left Navigation — 30% */}
-        {!navCollapsed && (
+        {/* Desktop/Tablet Navigation — 30% */}
+        {!isMobile && !navCollapsed && (
           <aside
             className="surface border-r border-r-[var(--border-subtle)] flex-shrink-0 animate-slide-in-left overflow-hidden"
-            style={{ width: '30%', minWidth: 240, maxWidth: 480 }}
+            style={{ width: isTablet ? '280px' : '30%', minWidth: 240, maxWidth: 480 }}
           >
             <NavTree />
           </aside>
         )}
 
-        {/* Main Canvas — 40% (flex-1 between panels) */}
+        {/* Main Canvas — flex-1 */}
         <main className="flex-1 overflow-hidden relative">
           {children}
         </main>
 
-        {/* Right Inspector — 30% */}
-        {inspectorOpen && (
+        {/* Desktop/Tablet Inspector — 30% */}
+        {!isMobile && inspectorOpen && (
           <aside
             className="surface border-l border-l-[var(--border-subtle)] flex-shrink-0 animate-slide-in-right overflow-hidden"
-            style={{ width: '30%', minWidth: 240, maxWidth: 480 }}
+            style={{ width: isTablet ? '280px' : '30%', minWidth: 240, maxWidth: 480 }}
           >
             <Inspector />
           </aside>
         )}
       </div>
+
+      {/* Mobile Drawer Backdrop */}
+      {isMobile && (mobileNavOpen || mobileInspectorOpen) && (
+        <div 
+          className="mobile-drawer-backdrop"
+          onClick={() => {
+            setMobileNavOpen(false)
+            setMobileInspectorOpen(false)
+          }}
+        />
+      )}
+
+      {/* Mobile Left Drawer (Navigation) */}
+      {isMobile && mobileNavOpen && (
+        <div className="mobile-drawer left">
+          <div className="mobile-drawer-header">
+            <span className="heading-md">Navigation</span>
+            <button
+              onClick={() => setMobileNavOpen(false)}
+              className="p-2 hover:bg-white/5 rounded transition-colors"
+            >
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M5 5L15 15M15 5L5 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+            </button>
+          </div>
+          <NavTree />
+        </div>
+      )}
+
+      {/* Mobile Right Drawer (Inspector) */}
+      {isMobile && mobileInspectorOpen && (
+        <div className="mobile-drawer right">
+          <div className="mobile-drawer-header">
+            <span className="heading-md">Inspector</span>
+            <button
+              onClick={() => setMobileInspectorOpen(false)}
+              className="p-2 hover:bg-white/5 rounded transition-colors"
+            >
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M5 5L15 15M15 5L5 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+            </button>
+          </div>
+          <Inspector />
+        </div>
+      )}
+
+      {/* Mobile Bottom Navigation */}
+      <MobileBottomNav />
     </div>
   )
 }
@@ -139,6 +220,11 @@ function Header() {
   const setInspectorOpen = useAppStore((s) => s.setInspectorOpen)
   const theme = useAppStore((s) => s.theme)
   const toggleTheme = useAppStore((s) => s.toggleTheme)
+
+  // Mobile state
+  const isMobile = useAppStore((s) => s.isMobile)
+  const setMobileNavOpen = useAppStore((s) => s.setMobileNavOpen)
+  const setMobileInspectorOpen = useAppStore((s) => s.setMobileInspectorOpen)
 
   // Apply theme class on initial mount
   useEffect(() => {
@@ -157,9 +243,9 @@ function Header() {
       {/* Left: Logo & Nav Toggle */}
       <div className="flex items-center gap-3">
         <button
-          onClick={() => setNavCollapsed(!navCollapsed)}
+          onClick={() => isMobile ? setMobileNavOpen(true) : setNavCollapsed(!navCollapsed)}
           className="p-1.5 hover:bg-white/5 rounded transition-colors"
-          title={navCollapsed ? 'Show navigation [' : 'Hide navigation ['}
+          title={isMobile ? 'Open navigation' : (navCollapsed ? 'Show navigation [' : 'Hide navigation [')}
         >
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none" className="text-secondary">
             <path d="M3 4.5H15M3 9H15M3 13.5H15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
@@ -177,28 +263,45 @@ function Header() {
           </div>
           <div>
             <span className="text-sm font-medium tracking-wide">Tvastr</span>
-            <span className="text-xs text-tertiary ml-2">Cognition Observatory</span>
+            <span className="text-xs text-tertiary ml-2 hide-mobile">Cognition Observatory</span>
           </div>
         </div>
       </div>
 
-      {/* Center: World Navigation */}
-      <WorldNav />
+      {/* Center: World Navigation (Desktop/Tablet only) */}
+      <div className="hide-mobile">
+        <WorldNav />
+      </div>
 
       {/* Right: Inspector Toggle & Settings */}
       <div className="flex items-center gap-2">
-        <button
-          onClick={() => setInspectorOpen(!inspectorOpen)}
-          className={`p-1.5 rounded transition-colors ${inspectorOpen ? 'bg-white/5 text-primary' : 'hover:bg-white/5 text-secondary'}`}
-          title={inspectorOpen ? 'Hide inspector ]' : 'Show inspector ]'}
-        >
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-            <rect x="3" y="3" width="12" height="12" rx="2" stroke="currentColor" strokeWidth="1.5" />
-            <path d="M10.5 3V15" stroke="currentColor" strokeWidth="1.5" />
-          </svg>
-        </button>
+        {!isMobile && (
+          <button
+            onClick={() => setInspectorOpen(!inspectorOpen)}
+            className={`p-1.5 rounded transition-colors ${inspectorOpen ? 'bg-white/5 text-primary' : 'hover:bg-white/5 text-secondary'}`}
+            title={inspectorOpen ? 'Hide inspector ]' : 'Show inspector ]'}
+          >
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <rect x="3" y="3" width="12" height="12" rx="2" stroke="currentColor" strokeWidth="1.5" />
+              <path d="M10.5 3V15" stroke="currentColor" strokeWidth="1.5" />
+            </svg>
+          </button>
+        )}
 
-        <div className="w-px h-5 bg-[var(--border-subtle)] mx-1" />
+        {isMobile && (
+          <button
+            onClick={() => setMobileInspectorOpen(true)}
+            className="p-1.5 rounded transition-colors hover:bg-white/5 text-secondary"
+            title="Open inspector"
+          >
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <rect x="3" y="3" width="12" height="12" rx="2" stroke="currentColor" strokeWidth="1.5" />
+              <path d="M10.5 3V15" stroke="currentColor" strokeWidth="1.5" />
+            </svg>
+          </button>
+        )}
+
+        <div className="w-px h-5 bg-[var(--border-subtle)] mx-1 hide-mobile" />
 
         {/* Theme Toggle: Sun/Moon */}
         <button
