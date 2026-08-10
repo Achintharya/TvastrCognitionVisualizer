@@ -138,24 +138,39 @@ export function ArchitectureGraph() {
 
   const onMouseUp = useCallback(() => { isPanning.current = false }, [])
 
-  // Zoom via wheel
+  // Zoom via wheel - restricted: no zoom out, max zoom in 200%
   const onWheel = useCallback((e: React.WheelEvent) => {
     e.preventDefault()
     if (!svgRef.current) return
+    
     const factor = e.deltaY > 0 ? 1.1 : 0.9
     const rect = svgRef.current.getBoundingClientRect()
     const mx = viewBox.x + ((e.clientX - rect.left) / rect.width) * viewBox.w
     const my = viewBox.y + ((e.clientY - rect.top) / rect.height) * viewBox.h
-    setViewBox(v => ({
-      x: mx - (mx - v.x) * factor,
-      y: my - (my - v.y) * factor,
-      w: v.w * factor,
-      h: v.h * factor,
-    }))
+    
+    const newW = viewBox.w * factor
+    const newH = viewBox.h * factor
+    
+    // Initial dimensions
+    const initialW = GRAPH_W + 120
+    const initialH = GRAPH_H + 80
+    
+    // Restrict zoom: no zoom out (w/h <= initial), max zoom in 200% (w/h >= initial * 0.5)
+    const minW = initialW * 0.5  // 200% zoom in
+    const maxW = initialW         // no zoom out
+    const minH = initialH * 0.5
+    const maxH = initialH
+    
+    // Check if new dimensions are within bounds
+    if (newW >= minW && newW <= maxW && newH >= minH && newH <= maxH) {
+      setViewBox(v => ({
+        x: mx - (mx - v.x) * factor,
+        y: my - (my - v.y) * factor,
+        w: newW,
+        h: newH,
+      }))
+    }
   }, [viewBox])
-
-  // Reset view
-  const resetView = () => setViewBox({ x: -60, y: -40, w: GRAPH_W + 120, h: GRAPH_H + 80 })
 
   // Node opacity based on focus/search state
   function nodeOpacity(id: string): number {
@@ -249,19 +264,6 @@ export function ArchitectureGraph() {
           />
         )}
       </svg>
-
-      {/* Reset + focus controls */}
-      <div className="absolute bottom-6 right-6 flex flex-col gap-2">
-        {minimapVisible && <Minimap positions={positions} viewBox={viewBox} selectedId={selectedCortexId} />}
-        <div className="flex gap-1">
-          <ControlButton onClick={resetView} title="Reset view">⊕</ControlButton>
-          <ControlButton
-            onClick={() => { setFocusMode(!focusMode) }}
-            title={focusMode ? 'Exit focus mode (F)' : 'Focus mode (F)'}
-            active={focusMode}
-          >⊙</ControlButton>
-        </div>
-      </div>
 
       {/* Clear focus on background click */}
       {focusMode && !hoveredNode && (
