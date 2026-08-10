@@ -110,32 +110,6 @@ function WorldOverviewInspector() {
           </div>
         </div>
 
-        {/* Edge legend */}
-        <div className="inspector-section">
-          <div className="heading-sm mb-3">Edge Types</div>
-          <div className="space-y-1.5">
-            {[
-              { type: 'orchestration', color: '#D97706', style: 'solid',   desc: 'Primary orchestration' },
-              { type: 'retrieval',     color: '#3B82F6', style: 'solid',   desc: 'Data retrieval' },
-              { type: 'context',       color: '#10B981', style: 'dashed',  desc: 'Context mounting' },
-              { type: 'event',         color: '#8B5CF6', style: 'animated',desc: 'Event streaming' },
-              { type: 'automation',    color: '#06B6D4', style: 'dotted',  desc: 'Automation feed' },
-            ].map(e => (
-              <div key={e.type} className="flex items-center gap-2.5">
-                <div className="w-8 flex items-center">
-                  <svg width="28" height="8" viewBox="0 0 28 8">
-                    <line x1="0" y1="4" x2="22" y2="4"
-                      stroke={e.color} strokeWidth="1.5"
-                      strokeDasharray={e.style === 'dashed' ? '4 2' : e.style === 'dotted' ? '2 3' : undefined} />
-                    <path d="M22 1L27 4L22 7" fill={e.color} opacity="0.8" />
-                  </svg>
-                </div>
-                <span className="text-xs text-secondary flex-1">{e.desc}</span>
-                <span className="text-[10px] text-tertiary capitalize">{e.type}</span>
-              </div>
-            ))}
-          </div>
-        </div>
       </>)}
 
       {/* Evolve-only sections */}

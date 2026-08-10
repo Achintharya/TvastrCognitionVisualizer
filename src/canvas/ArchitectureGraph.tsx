@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback, useEffect, useMemo } from 'react'
+import { useRef, useState, useCallback, useMemo } from 'react'
 import { useAppStore, CORTEXES } from '../stores/appStore'
 import type { CortexId, RuntimeStatus } from '../stores/appStore'
 
@@ -28,32 +28,7 @@ function computeLayout(): Record<CortexId, { x: number; y: number; r: number }> 
 
 // ── Edge rendering ────────────────────────────────────────────────────────────
 
-const EDGE_COLORS: Record<string, string> = {
-  orchestration: '#D97706',
-  retrieval:     '#3B82F6',
-  context:       '#10B981',
-  event:         '#8B5CF6',
-  automation:    '#06B6D4',
-}
-
-const EDGE_TYPE_LABEL: Record<string, string> = {
-  orchestration: 'orchestrates',
-  retrieval:     'retrieves',
-  context:       'mounts context',
-  event:         'streams events',
-  automation:    'feeds data',
-}
-
-function getEdgeStyle(type: string): { strokeDasharray: string; strokeWidth: number; animated: boolean } {
-  switch (type) {
-    case 'orchestration': return { strokeDasharray: 'none', strokeWidth: 2.5, animated: false }
-    case 'retrieval':     return { strokeDasharray: 'none', strokeWidth: 2,   animated: false }
-    case 'context':       return { strokeDasharray: '6 3',  strokeWidth: 1.5, animated: false }
-    case 'event':         return { strokeDasharray: '6 3',  strokeWidth: 1.5, animated: true }
-    case 'automation':    return { strokeDasharray: '2 4',  strokeWidth: 1.5, animated: false }
-    default:              return { strokeDasharray: '4 4',  strokeWidth: 1,   animated: false }
-  }
-}
+const FLOW_EDGE_COLOR = '#f5a623'
 
 // ── Runtime status indicators ─────────────────────────────────────────────────
 
@@ -219,19 +194,16 @@ export function ArchitectureGraph() {
         style={{ cursor: isPanning.current ? 'grabbing' : 'default' }}
       >
         <defs>
-          {/* Animated dash offset for event edges */}
           <style>{`
-            .edge-animated { animation: dashFlow 1.2s linear infinite; }
-            @keyframes dashFlow { to { stroke-dashoffset: -18; } }
+            .edge-flow { animation: dashFlow 1.5s linear infinite; }
+            @keyframes dashFlow { to { stroke-dashoffset: -20; } }
             .node-pulse { animation: nodePulse 2s ease-in-out infinite; }
             @keyframes nodePulse { 0%,100%{opacity:0.6;r:5} 50%{opacity:1;r:7} }
           `}</style>
-          {/* Arrowhead markers per edge type */}
-          {Object.entries(EDGE_COLORS).map(([type, color]) => (
-            <marker key={type} id={`arrow-${type}`} markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
-              <path d="M0,0 L0,6 L8,3 z" fill={color} opacity="0.7" />
-            </marker>
-          ))}
+          {/* Single arrowhead marker for flow edges */}
+          <marker id="arrow-flow" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill={FLOW_EDGE_COLOR} opacity="0.8" />
+          </marker>
           {/* Glow filter */}
           <filter id="glow">
             <feGaussianBlur stdDeviation="3" result="blur" />
@@ -301,59 +273,45 @@ function GraphEdges({
   positions: Record<CortexId, { x: number; y: number; r: number }>
   edgeOpacity: (s: string, t: string) => number
 }) {
-  const edges: { source: CortexId; target: CortexId; type: string; label: string; strength: number }[] = []
-  CORTEXES.forEach(c => {
-    c.connections.forEach(conn => {
-      edges.push({ source: c.id, target: conn.target, type: conn.type, label: conn.label, strength: conn.strength })
-    })
-  })
+  const vajra = positions['vajra']
+  if (!vajra) return null
+
+  // One animated dotted edge from every non-Vajra cortex → Vajra
+  const sources = CORTEXES.filter(c => c.id !== 'vajra')
 
   return (
     <g>
-      {edges.map((edge, i) => {
-        const src = positions[edge.source]
-        const tgt = positions[edge.target]
-        if (!src || !tgt) return null
-        const style = getEdgeStyle(edge.type)
-        const color = EDGE_COLORS[edge.type] || '#6b7280'
-        const opacity = edgeOpacity(edge.source, edge.target)
+      {sources.map(cortex => {
+        const src = positions[cortex.id]
+        if (!src) return null
+        const opacity = edgeOpacity(cortex.id, 'vajra')
 
-        // Compute points offset from node radii
-        const dx = tgt.x - src.x
-        const dy = tgt.y - src.y
+        const dx = vajra.x - src.x
+        const dy = vajra.y - src.y
         const len = Math.sqrt(dx * dx + dy * dy)
         const ux = dx / len, uy = dy / len
         const x1 = src.x + ux * (src.r + 4)
         const y1 = src.y + uy * (src.r + 4)
-        const x2 = tgt.x - ux * (tgt.r + 10)
-        const y2 = tgt.y - uy * (tgt.r + 10)
+        const x2 = vajra.x - ux * (vajra.r + 10)
+        const y2 = vajra.y - uy * (vajra.r + 10)
 
-        // Curved control point
-        const cx = (x1 + x2) / 2 - dy * 0.15
-        const cy = (y1 + y2) / 2 + dx * 0.15
+        // Gentle curve
+        const cx = (x1 + x2) / 2 - dy * 0.12
+        const cy = (y1 + y2) / 2 + dx * 0.12
         const d = `M${x1},${y1} Q${cx},${cy} ${x2},${y2}`
 
-        // Label midpoint
-        const lx = (x1 + x2) / 2 - dy * 0.1
-        const ly = (y1 + y2) / 2 + dx * 0.1
-
         return (
-          <g key={i} opacity={opacity}>
-            <path
-              d={d}
-              fill="none"
-              stroke={color}
-              strokeWidth={style.strokeWidth}
-              strokeDasharray={style.strokeDasharray === 'none' ? undefined : style.strokeDasharray}
-              strokeDashoffset={style.animated ? 0 : undefined}
-              className={style.animated ? 'edge-animated' : undefined}
-              markerEnd={`url(#arrow-${edge.type})`}
-            />
-            {/* Edge label on hover — always shown at low opacity */}
-            <text x={lx} y={ly} textAnchor="middle" fontSize="11" fill={color} opacity="0.7">
-              {EDGE_TYPE_LABEL[edge.type] || edge.type}
-            </text>
-          </g>
+          <path
+            key={cortex.id}
+            d={d}
+            fill="none"
+            stroke={FLOW_EDGE_COLOR}
+            strokeWidth={1.5}
+            strokeDasharray="4 4"
+            className="edge-flow"
+            markerEnd="url(#arrow-flow)"
+            opacity={opacity}
+          />
         )
       })}
     </g>
@@ -383,8 +341,6 @@ function CortexNode({
 }) {
   const isPlanned = cortex.status === 'planned'
   const scale = isSelected || isHovered ? 1.12 : 1
-  const domainCount = cortex.domains.length
-  const moduleCount = cortex.domains.reduce((a, d) => a + d.modules.length, 0)
 
   return (
     <g
@@ -452,16 +408,6 @@ function CortexNode({
         fontWeight="500"
       >
         {cortex.role.length > 30 ? cortex.role.slice(0, 30) + '…' : cortex.role}
-      </text>
-
-      {/* Domain / module count badges */}
-      <text
-        x={0} y={pos.r + 31}
-        textAnchor="middle"
-        fontSize={11}
-        fill="var(--text-tertiary)"
-      >
-        {domainCount}d · {moduleCount}m
       </text>
 
       {/* Planned badge */}
