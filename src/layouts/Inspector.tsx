@@ -26,9 +26,7 @@ const STATUS_LABEL: Record<RuntimeStatus, string> = {
 }
 
 export function Inspector() {
-  const selection     = useAppStore((s) => s.selection)
-  const inspectorOpen = useAppStore((s) => s.inspectorOpen)
-  if (!inspectorOpen) return null
+  const selection = useAppStore((s) => s.selection)
 
   if (!selection)                  return <WorldOverviewInspector />
   if (selection.type === 'cortex') return <CortexInspector cortexId={selection.cortexId!} />

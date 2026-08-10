@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useAppStore, WORLD_META } from '../stores/appStore'
 import { ArchitectureGraph } from './ArchitectureGraph'
 import { PIRAS_PIPELINE_STAGES, DEFAULT_ENERGY_STATE } from '../core/schema/pirasSchema'
@@ -33,121 +34,119 @@ function ExploreCanvas() {
    ============================================ */
 
 function ObserveCanvas() {
-  const addEvent  = useAppStore((s) => s.addEvent)
-  const events    = useAppStore((s) => s.events)
-  const setSelection = useAppStore((s) => s.setSelection)
+  const [openStages, setOpenStages] = useState<Set<string>>(new Set())
 
-  const simulateEvent = () => {
-    const sources = ['vajra', 'piras', 'client'] as const
-    const categories = ['perception', 'reasoning', 'decision', 'retrieval', 'execution'] as const
-    const types = [
-      'inspection.started', 'signal.extracted', 'energy.converged',
-      'decision.made', 'query.classified', 'retrieval.complete',
-      'quality.gate.passed', 'pipeline.stage.complete',
-    ]
-    addEvent({
-      id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-      timestamp: Date.now(),
-      source: sources[Math.floor(Math.random() * sources.length)],
-      type: types[Math.floor(Math.random() * types.length)],
-      category: categories[Math.floor(Math.random() * categories.length)],
-      confidence: Math.random() * 0.4 + 0.6,
+  const toggle = (id: string) => {
+    setOpenStages(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
     })
   }
 
-  const recentEvents = events.slice(-8).reverse()
-
   return (
-    <div className="h-full w-full flex overflow-hidden">
-      {/* Left: Pipeline flow */}
-      <div className="flex-1 overflow-y-auto p-6">
-        <div className="mb-4">
-          <div className="heading-sm mb-1">PIRAS Inspection Pipeline</div>
-          <div className="caption">11 stages · Stage 0 → Stage 10</div>
+    <div className="h-full w-full overflow-y-auto">
+      <div style={{ padding: '24px', paddingBottom: '40px' }}>
+
+        {/* Header */}
+        <div style={{ marginBottom: '20px' }}>
+          <div className="text-xs font-semibold tracking-widest uppercase text-tertiary" style={{ marginBottom: '6px' }}>PIRAS Inspection Pipeline</div>
+          <div className="text-sm text-secondary">
+            {PIRAS_PIPELINE_STAGES.length} stages &nbsp;•&nbsp; Stage 0 → Stage {PIRAS_PIPELINE_STAGES.length - 1}
+          </div>
         </div>
 
-        <div className="relative ml-4">
-          {PIRAS_PIPELINE_STAGES.map((stage, i) => (
-            <div key={stage.id} className="flex items-start gap-4 group cursor-pointer mb-1"
-              onClick={() => setSelection({ type: 'domain', id: 'pipeline', cortexId: 'piras', domainId: 'pipeline' })}>
-              {/* Timeline spine */}
-              <div className="flex flex-col items-center shrink-0" style={{ width: 20 }}>
+        {/* Pipeline stages */}
+        <div className="surface rounded-xl" style={{ padding: '8px 20px' }}>
+          {PIRAS_PIPELINE_STAGES.map((stage, i) => {
+            const isOpen = openStages.has(stage.id)
+            return (
+              <div key={stage.id}>
+                {/* Clickable row */}
                 <div
-                  className="w-3 h-3 rounded-full border-2 transition-all duration-200 group-hover:scale-125 shrink-0"
-                  style={{ borderColor: stage.color, backgroundColor: `${stage.color}30` }}
-                />
+                  onClick={() => toggle(stage.id)}
+                  style={{ display: 'flex', alignItems: 'flex-start', gap: '16px', padding: '14px 0', cursor: 'pointer' }}
+                >
+                  {/* Number circle + connector */}
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0, width: '32px' }}>
+                    <div style={{
+                      width: '32px', height: '32px', borderRadius: '50%',
+                      backgroundColor: stage.color, color: 'white',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: '13px', fontWeight: 700, flexShrink: 0,
+                    }}>
+                      {i + 1}
+                    </div>
+                    {i < PIRAS_PIPELINE_STAGES.length - 1 && (
+                      <div style={{ width: '2px', flex: 1, minHeight: '16px', backgroundColor: stage.color, opacity: 0.2, marginTop: '4px' }} />
+                    )}
+                  </div>
+
+                  {/* Name + latency + status */}
+                  <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: '14px', fontWeight: 600, color: stage.color }}>{stage.name}</span>
+                    <span className="text-tertiary" style={{ fontSize: '11px' }}>{stage.latencyMs[0]}–{stage.latencyMs[1]}ms</span>
+                    <span style={{
+                      fontSize: '11px', padding: '1px 8px', borderRadius: '4px', fontWeight: 600,
+                      color: stage.healthStatus === 'OK' ? '#16a34a' : '#ef4444',
+                      backgroundColor: stage.healthStatus === 'OK' ? 'rgba(22,163,74,0.1)' : 'rgba(239,68,68,0.1)',
+                    }}>
+                      {stage.healthStatus}
+                    </span>
+                  </div>
+
+                  {/* Chevron */}
+                  <div className="text-tertiary" style={{ fontSize: '14px', flexShrink: 0, transition: 'transform 0.2s', transform: isOpen ? 'rotate(90deg)' : 'rotate(0deg)' }}>›</div>
+                </div>
+
+                {/* Expanded content */}
+                {isOpen && (
+                  <div style={{ marginLeft: '48px', paddingBottom: '12px' }}>
+                    {/* Description */}
+                    <div className="text-secondary" style={{ fontSize: '12px', lineHeight: '1.5', marginBottom: '8px' }}>
+                      {stage.description}
+                    </div>
+                    {/* Flow tags */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
+                      {stage.inputs.map((tag, ti) => (
+                        <span key={`in-${ti}`}>
+                          <span style={{
+                            fontSize: '10px', padding: '2px 6px', borderRadius: '3px',
+                            backgroundColor: `${stage.color}12`, color: stage.color,
+                            fontFamily: 'monospace',
+                          }}>{tag}</span>
+                          {ti < stage.inputs.length - 1 && (
+                            <span className="text-tertiary" style={{ fontSize: '10px', margin: '0 2px' }}>+</span>
+                          )}
+                        </span>
+                      ))}
+                      <span className="text-tertiary" style={{ fontSize: '11px', margin: '0 4px' }}>→</span>
+                      {stage.outputs.map((tag, ti) => (
+                        <span key={`out-${ti}`}>
+                          <span style={{
+                            fontSize: '10px', padding: '2px 6px', borderRadius: '3px',
+                            backgroundColor: `${stage.color}12`, color: stage.color,
+                            fontFamily: 'monospace',
+                          }}>{tag}</span>
+                          {ti < stage.outputs.length - 1 && (
+                            <span className="text-tertiary" style={{ fontSize: '10px', margin: '0 2px' }}>+</span>
+                          )}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Divider */}
                 {i < PIRAS_PIPELINE_STAGES.length - 1 && (
-                  <div className="w-px flex-1 min-h-[24px]" style={{ backgroundColor: stage.color, opacity: 0.2 }} />
+                  <div style={{ height: '1px', backgroundColor: 'var(--border-subtle)', marginLeft: '48px' }} />
                 )}
               </div>
+            )
+          })}
+        </div>
 
-              {/* Stage info */}
-              <div className="flex-1 pb-5">
-                <div className="flex items-center gap-3 mb-0.5">
-                  <span className="text-sm font-medium" style={{ color: stage.color }}>{stage.name}</span>
-                  <span className="text-[10px] text-tertiary font-mono">
-                    {stage.latencyMs[0]}–{stage.latencyMs[1]}ms
-                  </span>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded ml-auto"
-                    style={{ backgroundColor: `${stage.healthStatus === 'OK' ? '#22c55e' : '#ef4444'}15`,
-                             color: stage.healthStatus === 'OK' ? '#22c55e' : '#ef4444' }}>
-                    {stage.healthStatus}
-                  </span>
-                </div>
-                <div className="text-xs text-secondary leading-relaxed">{stage.description}</div>
-                <div className="text-[10px] text-tertiary mt-1 italic">{stage.semanticMeaning}</div>
-                {/* Input/Output pills */}
-                <div className="flex gap-1 flex-wrap mt-1.5">
-                  {stage.inputs.slice(0, 3).map(inp => (
-                    <span key={inp} className="text-[9px] px-1.5 py-0.5 rounded bg-[var(--bg-elevated)] text-tertiary">
-                      ← {inp}
-                    </span>
-                  ))}
-                  {stage.outputs.slice(0, 2).map(out => (
-                    <span key={out} className="text-[9px] px-1.5 py-0.5 rounded text-[var(--cortex-piras)]"
-                      style={{ backgroundColor: 'rgba(59,130,246,0.08)' }}>
-                      → {out}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Right: Event stream */}
-      <div className="w-56 border-l border-[var(--border-subtle)] flex flex-col p-3 shrink-0">
-        <div className="flex items-center justify-between mb-3">
-          <div className="heading-sm">Events</div>
-          <button
-            onClick={simulateEvent}
-            className="text-[10px] px-2 py-1 rounded surface-elevated hover:bg-[var(--bg-hover)] transition-colors"
-          >
-            + Simulate
-          </button>
-        </div>
-        <div className="flex-1 overflow-y-auto space-y-1.5">
-          {recentEvents.length === 0 ? (
-            <div className="text-[11px] text-tertiary text-center pt-8">No events yet</div>
-          ) : recentEvents.map(ev => (
-            <div key={ev.id} className="surface rounded p-2">
-              <div className="text-[10px] font-medium" style={{
-                color: ev.source === 'vajra' ? 'var(--cortex-vajra)' :
-                       ev.source === 'piras' ? 'var(--cortex-piras)' : 'var(--cortex-client)'
-              }}>
-                {ev.type}
-              </div>
-              <div className="flex items-center justify-between mt-0.5">
-                <span className="text-[9px] text-tertiary">{ev.source}</span>
-                {ev.confidence && (
-                  <span className="text-[9px] text-tertiary">{(ev.confidence * 100).toFixed(0)}%</span>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-        <div className="mt-2 text-[10px] text-tertiary text-center">{events.length} total</div>
       </div>
 
       <WorldLabel world="observe" />
