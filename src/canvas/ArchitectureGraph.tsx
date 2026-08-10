@@ -246,7 +246,7 @@ export function ArchitectureGraph() {
         <rect x={viewBox.x} y={viewBox.y} width={viewBox.w} height={viewBox.h} fill="url(#dotgrid)" />
 
         {/* Tvastr label */}
-        <text x="450" y="50" textAnchor="middle" fontSize="11" fill="var(--text-tertiary)" letterSpacing="4" fontWeight="600">
+        <text x="450" y="50" textAnchor="middle" fontSize="14" fill="var(--text-tertiary)" letterSpacing="4" fontWeight="600">
           TVASTR INDUSTRIAL COGNITION
         </text>
 
@@ -350,7 +350,7 @@ function GraphEdges({
               markerEnd={`url(#arrow-${edge.type})`}
             />
             {/* Edge label on hover — always shown at low opacity */}
-            <text x={lx} y={ly} textAnchor="middle" fontSize="9" fill={color} opacity="0.7">
+            <text x={lx} y={ly} textAnchor="middle" fontSize="11" fill={color} opacity="0.7">
               {EDGE_TYPE_LABEL[edge.type] || edge.type}
             </text>
           </g>
@@ -434,7 +434,7 @@ function CortexNode({
       <text
         x={0} y={pos.r * 0.25}
         textAnchor="middle"
-        fontSize={pos.r > 40 ? 14 : 12}
+        fontSize={pos.r > 40 ? 18 : 15}
         fontWeight="700"
         fill="#ffffff"
         style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.9))' }}
@@ -447,7 +447,7 @@ function CortexNode({
       <text
         x={0} y={pos.r + 18}
         textAnchor="middle"
-        fontSize={10}
+        fontSize={13}
         fill="var(--text-secondary)"
         fontWeight="500"
       >
@@ -458,7 +458,7 @@ function CortexNode({
       <text
         x={0} y={pos.r + 31}
         textAnchor="middle"
-        fontSize={9}
+        fontSize={11}
         fill="var(--text-tertiary)"
       >
         {domainCount}d · {moduleCount}m
@@ -466,7 +466,7 @@ function CortexNode({
 
       {/* Planned badge */}
       {isPlanned && (
-        <text x={0} y={12} textAnchor="middle" fontSize={9} fill={cortex.color} opacity={0.6}>
+        <text x={0} y={12} textAnchor="middle" fontSize={11} fill={cortex.color} opacity={0.6}>
           planned
         </text>
       )}
@@ -496,13 +496,13 @@ function NodeTooltip({
     <g pointerEvents="none">
       <rect x={tx - 90} y={ty} width={180} height={52} rx={6}
         fill="var(--bg-elevated)" stroke="var(--border-default)" strokeWidth={1} opacity={0.97} />
-      <text x={tx} y={ty + 14} textAnchor="middle" fontSize={11} fontWeight="600" fill={cortex.color}>
+      <text x={tx} y={ty + 14} textAnchor="middle" fontSize={14} fontWeight="600" fill={cortex.color}>
         {cortex.fullName}
       </text>
-      <text x={tx} y={ty + 26} textAnchor="middle" fontSize={9} fill="var(--text-secondary)">
+      <text x={tx} y={ty + 26} textAnchor="middle" fontSize={11} fill="var(--text-secondary)">
         {cortex.role.length > 36 ? cortex.role.slice(0, 36) + '…' : cortex.role}
       </text>
-      <text x={tx} y={ty + 40} textAnchor="middle" fontSize={9} fill="var(--text-tertiary)">
+      <text x={tx} y={ty + 40} textAnchor="middle" fontSize={11} fill="var(--text-tertiary)">
         {cortex.domains.length} domains · {moduleCount} modules · {connCount} connections · {status}
       </text>
     </g>
