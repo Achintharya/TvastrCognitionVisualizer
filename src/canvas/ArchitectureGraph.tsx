@@ -133,7 +133,23 @@ export function ArchitectureGraph() {
     const scaleY = viewBox.h / rect.height
     const dx = (e.clientX - panStart.current.x) * scaleX
     const dy = (e.clientY - panStart.current.y) * scaleY
-    setViewBox(v => ({ ...v, x: panStart.current.vbx - dx, y: panStart.current.vby - dy }))
+    
+    const newX = panStart.current.vbx - dx
+    const newY = panStart.current.vby - dy
+    
+    // Define pan boundaries to keep content in view
+    // Allow some panning but prevent going too far off-screen
+    const panBuffer = 200 // pixels of buffer space
+    const minX = -panBuffer
+    const maxX = panBuffer
+    const minY = -panBuffer
+    const maxY = panBuffer
+    
+    // Constrain the new position within bounds
+    const constrainedX = Math.max(minX, Math.min(maxX, newX))
+    const constrainedY = Math.max(minY, Math.min(maxY, newY))
+    
+    setViewBox(v => ({ ...v, x: constrainedX, y: constrainedY }))
   }, [viewBox.w, viewBox.h])
 
   const onMouseUp = useCallback(() => { isPanning.current = false }, [])
