@@ -164,93 +164,133 @@ function UnderstandCanvas() {
 
   return (
     <div className="h-full w-full overflow-y-auto">
-      <div className="min-h-full flex flex-col items-center justify-center py-10 px-8">
-      <div className="w-full max-w-2xl">
-        <div className="mb-8">
-          <div className="text-xs font-semibold tracking-widest uppercase text-tertiary mb-2">Understand</div>
-          <div className="text-2xl font-semibold mb-1 text-primary">Energy Reasoning — Phase-K</div>
+      {/* Outer padding container — inline styles to guarantee rendering */}
+      <div style={{ padding: '24px', paddingBottom: '40px' }}>
+
+        {/* Header */}
+        <div style={{ marginBottom: '24px' }}>
+          <div className="text-xs font-semibold tracking-widest uppercase text-tertiary" style={{ marginBottom: '6px' }}>Understand</div>
+          <div className="font-semibold text-primary" style={{ fontSize: '24px', marginBottom: '4px' }}>Energy Reasoning — Phase-K</div>
           <div className="text-sm text-secondary">Physics-inspired defect classification via energy convergence</div>
         </div>
 
-        {/* Energy forces */}
-        <div className="surface rounded-xl p-6 mb-5">
-          <div className="text-xs font-semibold tracking-widest uppercase text-tertiary mb-4">Additive Energy Forces</div>
-          <div className="space-y-4">
-            {energy.forces.map(f => (
-              <div key={f.name}>
-                <div className="flex justify-between items-center mb-2">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: f.color }} />
-                    <span className="text-base font-medium">{f.name}</span>
+        {/* Top row: Energy Forces (left) + Stability + Formula (right) */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px', marginBottom: '16px' }}>
+
+          {/* Energy Forces */}
+          <div className="surface rounded-xl" style={{ padding: '20px' }}>
+            <div className="text-xs font-semibold tracking-widest uppercase text-tertiary" style={{ marginBottom: '16px' }}>Additive Energy Forces</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {energy.forces.map(f => (
+                <div key={f.name}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: f.color, flexShrink: 0 }} />
+                      <span className="text-sm font-medium">{f.name}</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <span className="text-xs text-tertiary">weight {(f.weight * 100).toFixed(0)}%</span>
+                      <span className="text-sm font-mono font-semibold" style={{ color: f.color }}>E={f.value.toFixed(3)}</span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-4">
-                    <span className="text-sm text-tertiary">weight {(f.weight * 100).toFixed(0)}%</span>
-                    <span className="text-base font-mono font-semibold" style={{ color: f.color }}>E={f.value.toFixed(3)}</span>
+                  <div style={{ width: '100%', height: '10px', backgroundColor: 'var(--bg-elevated)', borderRadius: '999px', overflow: 'hidden' }}>
+                    <div style={{ height: '100%', borderRadius: '999px', width: `${f.value * 100}%`, backgroundColor: f.color, opacity: 0.85 }} />
                   </div>
                 </div>
-                <div className="w-full h-3 bg-[var(--bg-elevated)] rounded-full overflow-hidden">
-                  <div className="h-full rounded-full transition-all duration-500"
-                    style={{ width: `${f.value * 100}%`, backgroundColor: f.color, opacity: 0.8 }} />
+              ))}
+            </div>
+          </div>
+
+          {/* Right: Stability Metrics + Formula */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {/* Stability Metrics */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
+              <div className="surface rounded-xl text-center" style={{ padding: '16px' }}>
+                <div className="font-bold" style={{ fontSize: '20px', marginBottom: '2px', color: energy.lyapunovStable ? '#22c55e' : '#ef4444' }}>
+                  {energy.lyapunovStable ? '✓ Stable' : '✗ Unstable'}
                 </div>
+                <div className="text-xs text-tertiary">Lyapunov</div>
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Stability metrics */}
-        <div className="grid grid-cols-3 gap-4 mb-5">
-          <div className="surface rounded-xl p-5 text-center">
-            <div className="text-2xl font-bold mb-1" style={{ color: energy.lyapunovStable ? '#22c55e' : '#ef4444' }}>
-              {energy.lyapunovStable ? '✓ Stable' : '✗ Unstable'}
-            </div>
-            <div className="text-sm text-tertiary">Lyapunov</div>
-          </div>
-          <div className="surface rounded-xl p-5 text-center">
-            <div className="text-2xl font-bold mb-1 text-[var(--cortex-piras)]">
-              {(energy.convergenceRate * 100).toFixed(0)}%
-            </div>
-            <div className="text-sm text-tertiary">Convergence</div>
-          </div>
-          <div className="surface rounded-xl p-5 text-center">
-            <div className="text-2xl font-bold mb-1 text-[var(--cortex-vajra)]">
-              {energy.totalEnergy.toFixed(3)}
-            </div>
-            <div className="text-sm text-tertiary">Total Energy</div>
-          </div>
-        </div>
-
-        {/* Formula explanation */}
-        <div className="surface rounded-xl p-6 mb-5">
-          <div className="text-xs font-semibold tracking-widest uppercase text-tertiary mb-3">Phase-K Formula</div>
-          <div className="font-mono text-xl text-[var(--cortex-piras)] mb-3">E = -log(p + ε)</div>
-          <div className="text-sm text-secondary leading-relaxed">
-            Each defect type corresponds to an energy minimum (well). The system evolves toward the lowest energy state, which represents the most probable defect classification. Lyapunov stability guarantees convergence without oscillation.
-          </div>
-        </div>
-
-        {/* Signal weights */}
-        <div className="surface rounded-xl p-6">
-          <div className="text-xs font-semibold tracking-widest uppercase text-tertiary mb-4">Multi-Signal Fusion Weights</div>
-          <div className="space-y-3">
-            {[
-              { name: 'Signal Classification', weight: 40, color: 'var(--cortex-piras)' },
-              { name: 'LLM Score',             weight: 35, color: 'var(--cortex-vajra)' },
-              { name: 'Agreement Score',        weight: 25, color: 'var(--cortex-client)' },
-            ].map(s => (
-              <div key={s.name} className="flex items-center gap-4">
-                <div className="text-sm text-secondary w-48 shrink-0">{s.name}</div>
-                <div className="flex-1 h-2 bg-[var(--bg-elevated)] rounded-full overflow-hidden">
-                  <div className="h-full rounded-full" style={{ width: `${s.weight}%`, backgroundColor: s.color }} />
+              <div className="surface rounded-xl text-center" style={{ padding: '16px' }}>
+                <div className="font-bold text-[var(--cortex-piras)]" style={{ fontSize: '20px', marginBottom: '2px' }}>
+                  {(energy.convergenceRate * 100).toFixed(0)}%
                 </div>
-                <span className="text-sm font-mono font-semibold text-tertiary w-10 text-right">{s.weight}%</span>
+                <div className="text-xs text-tertiary">Convergence</div>
               </div>
-            ))}
-          </div>
-          <div className="text-xs text-tertiary mt-4 leading-relaxed">
-            Signal is PRIMARY (40%). LLM provides semantic validation (35%). Agreement measures cross-modal consensus (25%).
+              <div className="surface rounded-xl text-center" style={{ padding: '16px' }}>
+                <div className="font-bold text-[var(--cortex-vajra)]" style={{ fontSize: '20px', marginBottom: '2px' }}>
+                  {energy.totalEnergy.toFixed(3)}
+                </div>
+                <div className="text-xs text-tertiary">Total Energy</div>
+              </div>
+            </div>
+
+            {/* Formula Explanation */}
+            <div className="surface rounded-xl" style={{ padding: '20px' }}>
+              <div className="text-xs font-semibold tracking-widest uppercase text-tertiary" style={{ marginBottom: '12px' }}>Phase-K Formula</div>
+              <div className="font-mono font-bold text-[var(--cortex-piras)]" style={{ fontSize: '20px', marginBottom: '12px', padding: '12px', backgroundColor: 'var(--bg-elevated)', borderRadius: '8px' }}>
+                E = -log(p + ε)
+              </div>
+              <div className="text-sm text-secondary" style={{ lineHeight: '1.6' }}>
+                Each defect type corresponds to an <strong>energy minimum</strong> (well). The system evolves toward the lowest energy state, which represents the most probable defect classification.
+              </div>
+              <div className="text-sm text-secondary" style={{ lineHeight: '1.6', marginTop: '8px' }}>
+                <strong>Lyapunov</strong> stability guarantees convergence without oscillation.
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+
+        {/* Bottom row: Multi-Signal Fusion (left) + Why Is It Happening (right) */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
+
+          {/* Multi-Signal Fusion */}
+          <div className="surface rounded-xl" style={{ padding: '20px' }}>
+            <div className="text-xs font-semibold tracking-widest uppercase text-tertiary" style={{ marginBottom: '16px' }}>Multi-Signal Fusion Weights</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {[
+                { name: 'Signal Classification', weight: 40, color: 'var(--cortex-piras)' },
+                { name: 'LLM Score',             weight: 35, color: 'var(--cortex-vajra)' },
+                { name: 'Agreement Score',       weight: 25, color: 'var(--cortex-client)' },
+              ].map(s => (
+                <div key={s.name} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div className="text-sm text-secondary" style={{ width: '160px', flexShrink: 0 }}>{s.name}</div>
+                  <div style={{ flex: 1, height: '10px', backgroundColor: 'var(--bg-elevated)', borderRadius: '999px', overflow: 'hidden' }}>
+                    <div style={{ height: '100%', borderRadius: '999px', width: `${s.weight}%`, backgroundColor: s.color, opacity: 0.9 }} />
+                  </div>
+                  <span className="text-sm font-mono font-semibold text-tertiary" style={{ width: '36px', textAlign: 'right' }}>{s.weight}%</span>
+                </div>
+              ))}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', marginTop: '16px', padding: '12px', backgroundColor: 'var(--bg-elevated)', borderRadius: '8px' }}>
+              <span className="text-tertiary text-xs" style={{ marginTop: '2px' }}>ℹ</span>
+              <div className="text-xs text-tertiary" style={{ lineHeight: '1.5' }}>
+                Signal is PRIMARY (40%). LLM provides semantic validation (35%). Agreement measures cross-modal consensus (25%).
+              </div>
+            </div>
+          </div>
+
+          {/* Why Is It Happening */}
+          <div className="surface rounded-xl" style={{ padding: '20px' }}>
+            <div className="text-xs font-semibold tracking-widest uppercase text-tertiary" style={{ marginBottom: '16px' }}>Why Is It Happening?</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
+              {[
+                { color: 'rgba(59,130,246,0.15)', emoji: '🔵', label: 'Reasoning', desc: 'Multi-signal evidence is combined using adaptive energy weighting.' },
+                { color: 'rgba(34,197,94,0.15)',  emoji: '🟢', label: 'Energy',    desc: 'System converges to the lowest energy state (most probable defect).' },
+                { color: 'rgba(168,85,247,0.15)', emoji: '🟣', label: 'Root Causes', desc: 'Energy minima correspond to underlying defect mechanisms.' },
+              ].map(item => (
+                <div key={item.label} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div style={{ width: '40px', height: '40px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', backgroundColor: item.color }}>
+                    {item.emoji}
+                  </div>
+                  <div className="text-sm font-semibold text-primary">{item.label}</div>
+                  <div className="text-xs text-secondary" style={{ lineHeight: '1.5' }}>{item.desc}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
       </div>
 
       <WorldLabel world="understand" />
