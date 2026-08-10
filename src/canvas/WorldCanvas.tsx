@@ -304,79 +304,91 @@ function UnderstandCanvas() {
 
 function EvolveCanvas() {
   const stages = [
-    { name: 'Signal System',        status: 'complete',  color: 'var(--status-success)',  desc: 'LBP, GLCM, edge, blob signals extracted and classified' },
-    { name: 'Process Intelligence', status: 'complete',  color: 'var(--status-success)',  desc: 'Plant analytics, SPC, rejection rate dashboards' },
-    { name: 'Energy Reasoning',     status: 'active',    color: 'var(--cortex-vajra)',    desc: 'Phase-K energy landscape, Lyapunov stability' },
-    { name: 'Vajra Cortex',         status: 'active',    color: 'var(--cortex-vajra)',    desc: 'Retrieval-first executive cognition with multi-LLM' },
-    { name: 'Client Cortex',        status: 'active',    color: 'var(--cortex-client)',   desc: 'Semantic factory memory — 14 domain knowledge layer' },
-    { name: 'Voice Interface',      status: 'active',    color: 'var(--cortex-vajra)',    desc: 'TTS/STT multilingual routing, 11 languages' },
-    { name: 'SCADA Cortex',         status: 'planned',   color: 'var(--cortex-scada)',    desc: 'PLC integration, real-time sensor fusion' },
-    { name: 'Business Cortex',      status: 'planned',   color: 'var(--cortex-business)', desc: 'ERP analytics, MES integration, enterprise intelligence' },
-    { name: 'Industrial Runtime',   status: 'future',    color: 'var(--text-muted)',      desc: 'Unified multi-cortex orchestration platform' },
+    { name: 'Signal System',        status: 'complete', color: '#16a34a', desc: 'LBP, GLCM, edge, blob signals extracted and classified' },
+    { name: 'Process Intelligence', status: 'complete', color: '#16a34a', desc: 'Plant analytics, SPC, rejection rate dashboards' },
+    { name: 'Energy Reasoning',     status: 'active',   color: '#f5a623', desc: 'Phase-K energy landscape, Lyapunov stability' },
+    { name: 'Vajra Cortex',         status: 'active',   color: '#f5a623', desc: 'Retrieval-first executive cognition with multi-LLM' },
+    { name: 'Client Cortex',        status: 'active',   color: '#f5a623', desc: 'Semantic factory memory — 14 domain knowledge layer' },
+    { name: 'Voice Interface',      status: 'active',   color: '#f5a623', desc: 'TTS/STT multilingual routing, 11 languages' },
+    { name: 'SCADA Cortex',         status: 'planned',  color: '#3b82f6', desc: 'PLC integration, real-time sensor fusion' },
+    { name: 'Business Cortex',      status: 'planned',  color: '#7c3aed', desc: 'ERP analytics, MES integration, enterprise intelligence' },
+    { name: 'Industrial Runtime',   status: 'future',   color: '#94a3b8', desc: 'Unified multi-cortex orchestration platform' },
   ]
 
-  const statusConfig: Record<string, { label: string; pulse: boolean }> = {
-    complete: { label: 'Complete', pulse: false },
-    active:   { label: 'Active',   pulse: true },
-    planned:  { label: 'Planned',  pulse: false },
-    future:   { label: 'Future',   pulse: false },
+  const statusLabel: Record<string, string> = {
+    complete: 'Complete', active: 'Active', planned: 'Planned', future: 'Future',
+  }
+  const statusBg: Record<string, string> = {
+    complete: 'rgba(22,163,74,0.12)', active: 'rgba(245,166,35,0.15)', planned: 'rgba(59,130,246,0.12)', future: 'rgba(148,163,184,0.1)',
+  }
+
+  const counts = {
+    complete: stages.filter(s => s.status === 'complete').length,
+    active:   stages.filter(s => s.status === 'active').length,
+    planned:  stages.filter(s => s.status === 'planned').length,
+    future:   stages.filter(s => s.status === 'future').length,
   }
 
   return (
     <div className="h-full w-full overflow-y-auto">
-      <div className="min-h-full flex flex-col items-center justify-start py-8 px-6">
-      <div className="w-full max-w-xl">
-        <div className="mb-6">
-          <div className="heading-sm mb-1">System Evolution Roadmap</div>
-          <div className="caption">The path toward unified industrial cognition</div>
+      <div style={{ padding: '24px', paddingBottom: '40px' }}>
+
+        {/* Header */}
+        <div style={{ marginBottom: '20px' }}>
+          <div className="text-xs font-semibold tracking-widest uppercase text-tertiary" style={{ marginBottom: '6px' }}>System Evolution Roadmap</div>
+          <div className="font-semibold text-primary" style={{ fontSize: '24px', marginBottom: '4px' }}>The path toward unified industrial cognition</div>
+          <div className="text-sm text-secondary">Track progress across the Tvastr Cortex ecosystem.</div>
         </div>
 
-        {/* Summary stats */}
-        <div className="grid grid-cols-4 gap-2 mb-6">
+        {/* Stats row */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '20px' }}>
           {[
-            { label: 'Complete',  value: stages.filter(s => s.status === 'complete').length, color: 'var(--status-success)' },
-            { label: 'Active',    value: stages.filter(s => s.status === 'active').length,   color: 'var(--cortex-vajra)' },
-            { label: 'Planned',   value: stages.filter(s => s.status === 'planned').length,  color: 'var(--text-tertiary)' },
-            { label: 'Future',    value: stages.filter(s => s.status === 'future').length,   color: 'var(--text-muted)' },
+            { label: 'Complete', value: counts.complete, color: '#16a34a' },
+            { label: 'Active',   value: counts.active,   color: '#f5a623' },
+            { label: 'Planned',  value: counts.planned,  color: '#3b82f6' },
+            { label: 'Future',   value: counts.future,   color: '#94a3b8' },
           ].map(s => (
-            <div key={s.label} className="surface rounded p-3 text-center">
-              <div className="text-xl font-semibold" style={{ color: s.color }}>{s.value}</div>
-              <div className="caption">{s.label}</div>
+            <div key={s.label} className="surface rounded-xl text-center" style={{ padding: '16px' }}>
+              <div className="font-semibold" style={{ fontSize: '28px', color: s.color, marginBottom: '4px' }}>{s.value}</div>
+              <div className="text-xs text-tertiary">{s.label}</div>
             </div>
           ))}
         </div>
 
         {/* Timeline */}
-        <div className="relative ml-2">
+        <div className="surface rounded-xl" style={{ padding: '20px' }}>
           {stages.map((stage, i) => {
-            const cfg = statusConfig[stage.status]
-            const opacity = stage.status === 'future' ? 0.4 : stage.status === 'planned' ? 0.65 : 1
+            const opacity = stage.status === 'future' ? 0.5 : stage.status === 'planned' ? 0.75 : 1
             return (
-              <div key={stage.name} className="flex items-start gap-4" style={{ opacity }}>
-                <div className="flex flex-col items-center shrink-0 mt-1" style={{ width: 16 }}>
-                  <div
-                    className={`w-3 h-3 rounded-full border-2 ${cfg.pulse ? 'animate-pulse' : ''}`}
-                    style={{ borderColor: stage.color, backgroundColor: `${stage.color}30` }}
-                  />
+              <div key={stage.name} style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', opacity }}>
+                {/* Icon + connector */}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0, width: '28px' }}>
+                  {stage.status === 'complete' ? (
+                    <div style={{ width: '28px', height: '28px', borderRadius: '50%', backgroundColor: stage.color, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '14px', fontWeight: 'bold', flexShrink: 0 }}>✓</div>
+                  ) : (
+                    <div style={{ width: '28px', height: '28px', borderRadius: '50%', border: `2px solid ${stage.color}`, backgroundColor: `${stage.color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: stage.color }} />
+                    </div>
+                  )}
                   {i < stages.length - 1 && (
-                    <div className="w-px flex-1 min-h-[28px]" style={{ backgroundColor: stage.color, opacity: 0.2 }} />
+                    <div style={{ width: '2px', flex: 1, minHeight: '24px', backgroundColor: stage.color, opacity: 0.2, margin: '2px 0' }} />
                   )}
                 </div>
-                <div className="flex-1 pb-5">
-                  <div className="flex items-center gap-3 mb-0.5">
-                    <span className="text-sm font-medium" style={{ color: stage.color }}>{stage.name}</span>
-                    <span className="text-[10px] px-1.5 py-0.5 rounded ml-auto"
-                      style={{ color: stage.color, backgroundColor: `${stage.color}18` }}>
-                      {cfg.label}
+                {/* Content */}
+                <div style={{ flex: 1, paddingBottom: i < stages.length - 1 ? '12px' : '0' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
+                    <span className="font-semibold text-primary" style={{ fontSize: '14px' }}>{stage.name}</span>
+                    <span style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '4px', color: stage.color, backgroundColor: statusBg[stage.status], fontWeight: 500 }}>
+                      {statusLabel[stage.status]}
                     </span>
                   </div>
-                  <div className="text-xs text-secondary">{stage.desc}</div>
+                  <div className="text-secondary" style={{ fontSize: '12px', lineHeight: '1.5' }}>{stage.desc}</div>
                 </div>
               </div>
             )
           })}
         </div>
-      </div>
+
       </div>
 
       <WorldLabel world="evolve" />

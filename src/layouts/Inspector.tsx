@@ -68,74 +68,133 @@ function WorldOverviewInspector() {
         <div className="mt-2 text-xs text-tertiary">Layout: <span className="text-secondary capitalize">{layoutMode}</span></div>
       </div>
 
-      {/* Engineering stats */}
-      <div className="inspector-section">
-        <div className="heading-sm mb-3">System Metrics</div>
-        <div className="grid grid-cols-2 gap-2">
-          <MetricPill label="Running Cortexes" value={`${runningCount}/${activeCortexes.length}`} color="var(--status-success)" />
-          <MetricPill label="Total Modules"    value={totalModules.toString()}                     color="var(--cortex-vajra)" />
-          <MetricPill label="Domains"          value={totalDomains.toString()}                    color="var(--cortex-piras)" />
-          <MetricPill label="Connections"      value={totalConns.toString()}                      color="var(--cortex-client)" />
-          <MetricPill label="Planned"          value={plannedCortexes.length.toString()}          color="var(--text-tertiary)" />
-          <MetricPill label="Active Services"  value={runningCount.toString()}                    color="var(--status-success)" />
+      {/* Explore-only sections */}
+      {currentWorld === 'explore' && (<>
+        {/* Engineering stats */}
+        <div className="inspector-section">
+          <div className="heading-sm mb-3">System Metrics</div>
+          <div className="grid grid-cols-2 gap-2">
+            <MetricPill label="Running Cortexes" value={`${runningCount}/${activeCortexes.length}`} color="var(--status-success)" />
+            <MetricPill label="Total Modules"    value={totalModules.toString()}                     color="var(--cortex-vajra)" />
+            <MetricPill label="Domains"          value={totalDomains.toString()}                    color="var(--cortex-piras)" />
+            <MetricPill label="Connections"      value={totalConns.toString()}                      color="var(--cortex-client)" />
+            <MetricPill label="Planned"          value={plannedCortexes.length.toString()}          color="var(--text-tertiary)" />
+            <MetricPill label="Active Services"  value={runningCount.toString()}                    color="var(--status-success)" />
+          </div>
         </div>
-      </div>
 
-      {/* Cortex health table */}
-      <div className="inspector-section">
-        <div className="heading-sm mb-3">Cortex Status</div>
-        <div className="space-y-2">
-          {CORTEXES.map(cortex => {
-            const status = runtimeStatus[cortex.id]
-            const domainCount  = cortex.domains.length
-            const moduleCount  = cortex.domains.reduce((a, d) => a + d.modules.length, 0)
-            return (
-              <div
-                key={cortex.id}
-                className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-[var(--bg-hover)] cursor-pointer transition-colors"
-                onClick={() => setSelection({ type: 'cortex', id: cortex.id, cortexId: cortex.id })}
-              >
-                <div className="w-2 h-2 rounded-full shrink-0 flex-none"
-                  style={{ backgroundColor: STATUS_COLOR[status] }} />
-                <div className="w-2 h-2 rounded-sm shrink-0" style={{ backgroundColor: cortex.color }} />
-                <span className="text-sm flex-1 font-medium">{cortex.name}</span>
-                <span className="text-[10px] text-tertiary">{domainCount}d</span>
-                <span className="text-[10px] text-tertiary">{moduleCount}m</span>
-                <span className="text-[10px] px-1 rounded" style={{ color: STATUS_COLOR[status], backgroundColor: `${STATUS_COLOR[status]}15` }}>
-                  {STATUS_LABEL[status]}
-                </span>
-              </div>
-            )
-          })}
+        {/* Cortex health table */}
+        <div className="inspector-section">
+          <div className="heading-sm mb-3">Cortex Status</div>
+          <div className="space-y-2">
+            {CORTEXES.map(cortex => {
+              const status = runtimeStatus[cortex.id]
+              const domainCount  = cortex.domains.length
+              const moduleCount  = cortex.domains.reduce((a, d) => a + d.modules.length, 0)
+              return (
+                <div
+                  key={cortex.id}
+                  className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-[var(--bg-hover)] cursor-pointer transition-colors"
+                  onClick={() => setSelection({ type: 'cortex', id: cortex.id, cortexId: cortex.id })}
+                >
+                  <div className="w-2 h-2 rounded-full shrink-0 flex-none"
+                    style={{ backgroundColor: STATUS_COLOR[status] }} />
+                  <div className="w-2 h-2 rounded-sm shrink-0" style={{ backgroundColor: cortex.color }} />
+                  <span className="text-sm flex-1 font-medium">{cortex.name}</span>
+                  <span className="text-[10px] text-tertiary">{domainCount}d</span>
+                  <span className="text-[10px] text-tertiary">{moduleCount}m</span>
+                  <span className="text-[10px] px-1 rounded" style={{ color: STATUS_COLOR[status], backgroundColor: `${STATUS_COLOR[status]}15` }}>
+                    {STATUS_LABEL[status]}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
         </div>
-      </div>
 
-      {/* Edge legend */}
-      <div className="inspector-section">
-        <div className="heading-sm mb-3">Edge Types</div>
-        <div className="space-y-1.5">
-          {[
-            { type: 'orchestration', color: '#D97706', style: 'solid',   desc: 'Primary orchestration' },
-            { type: 'retrieval',     color: '#3B82F6', style: 'solid',   desc: 'Data retrieval' },
-            { type: 'context',       color: '#10B981', style: 'dashed',  desc: 'Context mounting' },
-            { type: 'event',         color: '#8B5CF6', style: 'animated',desc: 'Event streaming' },
-            { type: 'automation',    color: '#06B6D4', style: 'dotted',  desc: 'Automation feed' },
-          ].map(e => (
-            <div key={e.type} className="flex items-center gap-2.5">
-              <div className="w-8 flex items-center">
-                <svg width="28" height="8" viewBox="0 0 28 8">
-                  <line x1="0" y1="4" x2="22" y2="4"
-                    stroke={e.color} strokeWidth="1.5"
-                    strokeDasharray={e.style === 'dashed' ? '4 2' : e.style === 'dotted' ? '2 3' : undefined} />
-                  <path d="M22 1L27 4L22 7" fill={e.color} opacity="0.8" />
-                </svg>
+        {/* Edge legend */}
+        <div className="inspector-section">
+          <div className="heading-sm mb-3">Edge Types</div>
+          <div className="space-y-1.5">
+            {[
+              { type: 'orchestration', color: '#D97706', style: 'solid',   desc: 'Primary orchestration' },
+              { type: 'retrieval',     color: '#3B82F6', style: 'solid',   desc: 'Data retrieval' },
+              { type: 'context',       color: '#10B981', style: 'dashed',  desc: 'Context mounting' },
+              { type: 'event',         color: '#8B5CF6', style: 'animated',desc: 'Event streaming' },
+              { type: 'automation',    color: '#06B6D4', style: 'dotted',  desc: 'Automation feed' },
+            ].map(e => (
+              <div key={e.type} className="flex items-center gap-2.5">
+                <div className="w-8 flex items-center">
+                  <svg width="28" height="8" viewBox="0 0 28 8">
+                    <line x1="0" y1="4" x2="22" y2="4"
+                      stroke={e.color} strokeWidth="1.5"
+                      strokeDasharray={e.style === 'dashed' ? '4 2' : e.style === 'dotted' ? '2 3' : undefined} />
+                    <path d="M22 1L27 4L22 7" fill={e.color} opacity="0.8" />
+                  </svg>
+                </div>
+                <span className="text-xs text-secondary flex-1">{e.desc}</span>
+                <span className="text-[10px] text-tertiary capitalize">{e.type}</span>
               </div>
-              <span className="text-xs text-secondary flex-1">{e.desc}</span>
-              <span className="text-[10px] text-tertiary capitalize">{e.type}</span>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
+      </>)}
+
+      {/* Evolve-only sections */}
+      {currentWorld === 'evolve' && (<>
+        {/* About This Roadmap */}
+        <div className="inspector-section">
+          <div className="heading-sm mb-3">About This Roadmap</div>
+          <div className="text-xs text-secondary" style={{ lineHeight: '1.6' }}>
+            This roadmap represents our journey toward building a unified industrial cognition platform. Each cortex builds on the previous foundation, bringing us closer to autonomous, intelligent manufacturing.
+          </div>
+        </div>
+
+        {/* Legend */}
+        <div className="inspector-section">
+          <div className="heading-sm mb-3">Legend</div>
+          <div className="space-y-3">
+            {[
+              { color: '#16a34a', label: 'Complete', desc: 'Fully implemented and operational' },
+              { color: '#f5a623', label: 'Active',   desc: 'In development and actively evolving' },
+              { color: '#3b82f6', label: 'Planned',  desc: 'Planned for upcoming phases' },
+              { color: '#7c3aed', label: 'Future',   desc: 'Long-term vision and research' },
+            ].map(l => (
+              <div key={l.label} className="flex items-start gap-2.5">
+                <div className="w-2.5 h-2.5 rounded-full mt-1 shrink-0" style={{ backgroundColor: l.color }} />
+                <div>
+                  <div className="text-sm font-semibold text-primary">{l.label}</div>
+                  <div className="text-xs text-tertiary">{l.desc}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Key Principles */}
+        <div className="inspector-section">
+          <div className="heading-sm mb-3">Key Principles</div>
+          <div className="space-y-3">
+            {[
+              { color: '#3b82f6', abbr: 'UI', label: 'Unified Intelligence',  desc: 'All cortexes work together seamlessly' },
+              { color: '#f5a623', abbr: 'MA', label: 'Modular Architecture',  desc: 'Independent yet deeply integrated' },
+              { color: '#16a34a', abbr: 'CE', label: 'Continuous Evolution',  desc: 'Always learning, always improving' },
+              { color: '#7c3aed', abbr: '🔒', label: 'Enterprise Ready',       desc: 'Secure, scalable, and reliable' },
+            ].map(p => (
+              <div key={p.label} className="flex items-start gap-2.5">
+                <div className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold shrink-0"
+                  style={{ backgroundColor: `${p.color}20`, color: p.color }}>
+                  {p.abbr}
+                </div>
+                <div>
+                  <div className="text-sm font-semibold text-primary">{p.label}</div>
+                  <div className="text-xs text-secondary">{p.desc}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </>)}
 
       {/* Keyboard shortcuts */}
       <div className="inspector-section">
