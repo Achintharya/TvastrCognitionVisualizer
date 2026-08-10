@@ -1,6 +1,6 @@
 import { useRef, useState, useCallback, useEffect, useMemo } from 'react'
 import { useAppStore, CORTEXES } from '../stores/appStore'
-import type { CortexId, LayoutMode, RuntimeStatus } from '../stores/appStore'
+import type { CortexId, RuntimeStatus } from '../stores/appStore'
 
 /* ============================================
    ARCHITECTURE GRAPH
@@ -14,56 +14,15 @@ import type { CortexId, LayoutMode, RuntimeStatus } from '../stores/appStore'
 const GRAPH_W = 900
 const GRAPH_H = 600
 
-// Returns node positions for each layout mode (in SVG coordinate space)
-function computeLayout(mode: LayoutMode): Record<CortexId, { x: number; y: number; r: number }> {
-  switch (mode) {
-    case 'architecture':
-      return {
-        vajra:    { x: 450, y: 130, r: 52 },
-        piras:    { x: 200, y: 320, r: 44 },
-        client:   { x: 700, y: 320, r: 44 },
-        mis:      { x: 450, y: 340, r: 40 },
-        scada:    { x: 130, y: 500, r: 32 },
-        business: { x: 770, y: 500, r: 32 },
-      }
-    case 'dependencies':
-      return {
-        vajra:    { x: 450, y: 100, r: 52 },
-        piras:    { x: 200, y: 300, r: 44 },
-        client:   { x: 700, y: 300, r: 44 },
-        mis:      { x: 450, y: 310, r: 40 },
-        scada:    { x: 130, y: 490, r: 32 },
-        business: { x: 770, y: 490, r: 32 },
-      }
-    case 'dataflow':
-      return {
-        scada:    { x: 90,  y: 300, r: 30 },
-        piras:    { x: 250, y: 300, r: 44 },
-        client:   { x: 420, y: 180, r: 38 },
-        vajra:    { x: 580, y: 300, r: 52 },
-        mis:      { x: 760, y: 300, r: 40 },
-        business: { x: 870, y: 420, r: 28 },
-      }
-    case 'runtime':
-      return {
-        vajra:    { x: 450, y: 270, r: 52 },
-        piras:    { x: 220, y: 180, r: 44 },
-        client:   { x: 680, y: 180, r: 44 },
-        mis:      { x: 450, y: 150, r: 40 },
-        scada:    { x: 200, y: 400, r: 32 },
-        business: { x: 700, y: 400, r: 32 },
-      }
-    case 'package':
-      return {
-        vajra:    { x: 450, y: 130, r: 52 },
-        piras:    { x: 170, y: 310, r: 44 },
-        client:   { x: 730, y: 310, r: 44 },
-        mis:      { x: 450, y: 330, r: 40 },
-        scada:    { x: 200, y: 500, r: 30 },
-        business: { x: 700, y: 500, r: 30 },
-      }
-    default:
-      return computeLayout('architecture')
+// Returns node positions (architecture layout only)
+function computeLayout(): Record<CortexId, { x: number; y: number; r: number }> {
+  return {
+    vajra:    { x: 450, y: 130, r: 52 },
+    piras:    { x: 200, y: 320, r: 44 },
+    client:   { x: 700, y: 320, r: 44 },
+    mis:      { x: 450, y: 340, r: 40 },
+    scada:    { x: 130, y: 500, r: 32 },
+    business: { x: 770, y: 500, r: 32 },
   }
 }
 
@@ -111,7 +70,6 @@ const STATUS_COLOR: Record<RuntimeStatus, string> = {
 export function ArchitectureGraph() {
   const selection       = useAppStore((s) => s.selection)
   const setSelection    = useAppStore((s) => s.setSelection)
-  const layoutMode      = useAppStore((s) => s.layoutMode)
   const focusMode       = useAppStore((s) => s.focusMode)
   const setFocusMode    = useAppStore((s) => s.setFocusMode)
   const hoveredNode     = useAppStore((s) => s.hoveredNode)
@@ -125,7 +83,7 @@ export function ArchitectureGraph() {
   const isPanning = useRef(false)
   const panStart  = useRef({ x: 0, y: 0, vbx: 0, vby: 0 })
 
-  const positions = useMemo(() => computeLayout(layoutMode), [layoutMode])
+  const positions = useMemo(() => computeLayout(), [])
 
   // Determine selected cortex ID
   const selectedCortexId = selection?.cortexId ?? null
@@ -217,9 +175,6 @@ export function ArchitectureGraph() {
 
   return (
     <div className="relative w-full h-full overflow-hidden">
-      {/* Layout toolbar */}
-      <LayoutToolbar />
-
       {/* Main SVG */}
       <svg
         ref={svgRef}
@@ -265,7 +220,7 @@ export function ArchitectureGraph() {
         </text>
 
         {/* Edges */}
-        <GraphEdges positions={positions} edgeOpacity={edgeOpacity} layoutMode={layoutMode} />
+        <GraphEdges positions={positions} edgeOpacity={edgeOpacity} />
 
         {/* Cortex nodes */}
         {CORTEXES.map(cortex => (
@@ -324,11 +279,9 @@ export function ArchitectureGraph() {
 function GraphEdges({
   positions,
   edgeOpacity,
-  layoutMode,
 }: {
   positions: Record<CortexId, { x: number; y: number; r: number }>
   edgeOpacity: (s: string, t: string) => number
-  layoutMode: LayoutMode
 }) {
   const edges: { source: CortexId; target: CortexId; type: string; label: string; strength: number }[] = []
   CORTEXES.forEach(c => {
@@ -570,40 +523,6 @@ function Minimap({
           x={viewBox.x} y={viewBox.y} width={viewBox.w} height={viewBox.h}
           fill="none" stroke="var(--brand-accent)" strokeWidth={8} opacity={0.5} />
       </svg>
-    </div>
-  )
-}
-
-// ── Layout toolbar ────────────────────────────────────────────────────────────
-
-function LayoutToolbar() {
-  const layoutMode    = useAppStore((s) => s.layoutMode)
-  const setLayoutMode = useAppStore((s) => s.setLayoutMode)
-
-  const modes: { id: LayoutMode; label: string; key: string }[] = [
-    { id: 'architecture', label: 'Architecture', key: 'A' },
-    { id: 'dependencies', label: 'Dependencies', key: 'D' },
-    { id: 'dataflow',     label: 'Data Flow',    key: 'F' },
-    { id: 'runtime',      label: 'Runtime',      key: 'R' },
-    { id: 'package',      label: 'Package',      key: 'P' },
-  ]
-
-  return (
-    <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2.5 px-4 py-3 rounded-xl surface-elevated shadow-md">
-      {modes.map(m => (
-        <button
-          key={m.id}
-          onClick={() => setLayoutMode(m.id)}
-          title={`${m.label} (${m.key})`}
-          className={`px-5 py-2.5 rounded-lg text-lg font-medium transition-all duration-150 ${
-            layoutMode === m.id
-              ? 'bg-[var(--brand-accent)] text-[var(--brand-accent-fg)] shadow-sm'
-              : 'text-secondary hover:text-primary hover:bg-[var(--bg-hover)]'
-          }`}
-        >
-          {m.label}
-        </button>
-      ))}
     </div>
   )
 }

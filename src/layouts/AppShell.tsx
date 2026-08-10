@@ -30,7 +30,6 @@ export function AppShell({ children }: AppShellProps) {
   const inspectorOpen     = useAppStore((s) => s.inspectorOpen)
   const setNavCollapsed   = useAppStore((s) => s.setNavCollapsed)
   const setInspectorOpen  = useAppStore((s) => s.setInspectorOpen)
-  const setLayoutMode     = useAppStore((s) => s.setLayoutMode)
   const focusMode         = useAppStore((s) => s.focusMode)
   const setFocusMode      = useAppStore((s) => s.setFocusMode)
   const minimapVisible    = useAppStore((s) => s.minimapVisible)
@@ -90,12 +89,6 @@ export function AppShell({ children }: AppShellProps) {
         case '3': setWorld('understand'); break
         case '4': setWorld('evolve');     break
 
-        // Layout modes (in Explore world)
-        case 'a': case 'A': setLayoutMode('architecture'); break
-        case 'd': case 'D': setLayoutMode('dependencies'); break
-        case 'r': case 'R': setLayoutMode('runtime');      break
-        case 'p': case 'P': setLayoutMode('package');      break
-
         // Focus mode toggle
         case 'f': case 'F':
           setFocusMode(!focusMode)
@@ -121,7 +114,7 @@ export function AppShell({ children }: AppShellProps) {
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
   }, [setWorld, setSelection, navCollapsed, setNavCollapsed, inspectorOpen, setInspectorOpen,
-      setLayoutMode, setFocusMode, focusMode, setMinimapVisible, minimapVisible])
+      setFocusMode, focusMode, setMinimapVisible, minimapVisible])
 
   return (
     <div className="h-full w-full flex flex-col bg-[var(--bg-space)]">
