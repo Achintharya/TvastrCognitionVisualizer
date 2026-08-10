@@ -19,10 +19,11 @@ export function WorldNav() {
             onClick={() => setWorld(world)}
             className={`world-tab ${isActive ? 'active' : ''}`}
             title={meta.description}
+            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1px' }}
           >
             <span className="capitalize">{world}</span>
             <span 
-              className="ml-2 text-[10px] opacity-50 hidden lg:inline"
+              className="text-[10px] opacity-50 hidden lg:block"
               style={{ fontWeight: 400 }}
             >
               {meta.question}
