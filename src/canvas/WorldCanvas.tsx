@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useAppStore, WORLD_META } from '../stores/appStore'
+import { useAppStore } from '../stores/appStore'
 import { ArchitectureGraph } from './ArchitectureGraph'
 import { PIRAS_PIPELINE_STAGES, DEFAULT_ENERGY_STATE } from '../core/schema/pirasSchema'
 
@@ -149,7 +149,6 @@ function ObserveCanvas() {
 
       </div>
 
-      <WorldLabel world="observe" />
     </div>
   )
 }
@@ -292,7 +291,6 @@ function UnderstandCanvas() {
 
       </div>
 
-      <WorldLabel world="understand" />
     </div>
   )
 }
@@ -390,21 +388,6 @@ function EvolveCanvas() {
 
       </div>
 
-      <WorldLabel world="evolve" />
-    </div>
-  )
-}
-
-/* ============================================
-   WORLD LABEL
-   ============================================ */
-
-function WorldLabel({ world }: { world: keyof typeof WORLD_META }) {
-  const meta = WORLD_META[world]
-  return (
-    <div className="absolute bottom-5 left-5 pointer-events-none">
-      <div className="heading-sm mb-0.5">{meta.question}</div>
-      <div className="caption">{meta.description}</div>
     </div>
   )
 }
