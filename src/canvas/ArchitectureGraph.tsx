@@ -52,6 +52,11 @@ export function ArchitectureGraph() {
   const runtimeStatus   = useAppStore((s) => s.runtimeStatus)
   const minimapVisible  = useAppStore((s) => s.minimapVisible)
   const searchQuery     = useAppStore((s) => s.searchQuery)
+  const theme           = useAppStore((s) => s.theme)
+
+  // Resolved text colors based on theme
+  const textPrimary   = theme === 'dark' ? '#e8e8ec' : '#0f172a'
+  const textSecondary = theme === 'dark' ? '#9a9aaa' : '#475569'
 
   const svgRef = useRef<SVGSVGElement>(null)
   const [viewBox, setViewBox] = useState({ x: -60, y: -40, w: GRAPH_W + 120, h: GRAPH_H + 80 })
@@ -235,6 +240,8 @@ export function ArchitectureGraph() {
             isHovered={hoveredNode === cortex.id}
             opacity={nodeOpacity(cortex.id)}
             status={runtimeStatus[cortex.id]}
+            textPrimary={textPrimary}
+            textSecondary={textSecondary}
             onSelect={() => {
               setSelection({ type: 'cortex', id: cortex.id, cortexId: cortex.id })
               if (!focusMode) setFocusMode(true)
@@ -327,6 +334,8 @@ function CortexNode({
   isHovered,
   opacity,
   status,
+  textPrimary,
+  textSecondary,
   onSelect,
   onHover,
 }: {
@@ -336,6 +345,8 @@ function CortexNode({
   isHovered: boolean
   opacity: number
   status: RuntimeStatus
+  textPrimary: string
+  textSecondary: string
   onSelect: () => void
   onHover: (id: string | null) => void
 }) {
@@ -386,14 +397,13 @@ function CortexNode({
         className={status === 'running' ? 'node-pulse' : undefined}
       />
 
-      {/* Cortex name — rendered outside the fill with high contrast */}
+      {/* Cortex name */}
       <text
         x={0} y={pos.r * 0.25}
         textAnchor="middle"
         fontSize={pos.r > 40 ? 18 : 15}
         fontWeight="700"
-        fill="#ffffff"
-        style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.9))' }}
+        fill={textPrimary}
         letterSpacing="0.5"
       >
         {cortex.name}
@@ -404,7 +414,7 @@ function CortexNode({
         x={0} y={pos.r + 18}
         textAnchor="middle"
         fontSize={13}
-        fill="var(--text-secondary)"
+        fill={textSecondary}
         fontWeight="500"
       >
         {cortex.role.length > 30 ? cortex.role.slice(0, 30) + '…' : cortex.role}

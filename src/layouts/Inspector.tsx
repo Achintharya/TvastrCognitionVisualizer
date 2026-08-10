@@ -98,9 +98,7 @@ function WorldOverviewInspector() {
                   <div className="w-2 h-2 rounded-full shrink-0 flex-none"
                     style={{ backgroundColor: STATUS_COLOR[status] }} />
                   <div className="w-2 h-2 rounded-sm shrink-0" style={{ backgroundColor: cortex.color }} />
-                  <span className="text-sm flex-1 font-medium">{cortex.name}</span>
-                  <span className="text-[10px] text-tertiary">{domainCount}d</span>
-                  <span className="text-[10px] text-tertiary">{moduleCount}m</span>
+                  <span className="text-sm flex-1 font-medium text-primary">{cortex.name}</span>
                   <span className="text-[10px] px-1 rounded" style={{ color: STATUS_COLOR[status], backgroundColor: `${STATUS_COLOR[status]}15` }}>
                     {STATUS_LABEL[status]}
                   </span>
